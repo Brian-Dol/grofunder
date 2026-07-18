@@ -1,5 +1,9 @@
 # Use official PHP image with Apache
-FROM php:8.3-apache
+FROM php:8.3-apache AS builder
+
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -41,6 +45,9 @@ COPY . .
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+
+# Install Node dependencies and build frontend assets
+RUN npm install && npm run build
 
 # Set permissions
 RUN chown -R www-data:www-data storage bootstrap/cache \

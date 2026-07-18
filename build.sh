@@ -4,6 +4,10 @@
 # Install PHP dependencies
 composer install --no-dev --optimize-autoloader
 
+# Install Node dependencies and build frontend assets
+npm install
+npm run build
+
 # Generate app key if not set
 php artisan key:generate --force || true
 
