@@ -75,6 +75,11 @@ if [ ! -f /var/www/html/.env ]; then\n\
     echo "APP_URL=${APP_URL:-https://grofunder.onrender.com}" >> /var/www/html/.env\n\
     echo "TRUSTED_PROXIES=*" >> /var/www/html/.env\n\
 fi\n\
+# Always clear cache for fresh deployment\n\
+php artisan config:clear 2>/dev/null || true\n\
+php artisan route:clear 2>/dev/null || true\n\
+php artisan view:clear 2>/dev/null || true\n\
+# Rebuild cache\n\
 php artisan config:cache 2>/dev/null || true\n\
 php artisan route:cache 2>/dev/null || true\n\
 php artisan migrate --force 2>/dev/null || true\n\
