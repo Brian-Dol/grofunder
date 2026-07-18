@@ -65,7 +65,6 @@ RUN echo "<Directory /var/www/html/public>\n\
 </Directory>" > /etc/apache2/conf-available/laravel.conf \
     && echo "SetEnvIf X-Forwarded-Proto https HTTPS=on" >> /etc/apache2/conf-available/laravel.conf \
     && echo "SetEnvIf X-Forwarded-Proto https HTTP_X_FORWARDED_PROTO=https" >> /etc/apache2/conf-available/laravel.conf \
-    && echo "ProxyPreserveHost On" >> /etc/apache2/conf-available/laravel.conf \
     && a2enconf laravel \
     && sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
 

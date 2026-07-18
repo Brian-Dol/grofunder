@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if table already exists (from previous migration)
+        if (Schema::hasTable('cooperatives')) {
+            return;
+        }
+
         Schema::create('cooperatives', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();

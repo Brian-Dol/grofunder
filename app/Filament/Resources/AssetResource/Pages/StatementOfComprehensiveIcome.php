@@ -6,7 +6,7 @@ use Filament\Resources\Pages\Page;
 use App\Services\StatementOfComprehensiveIncome as Service;
 use App\Filament\Resources\AssetResource;
 
-class StatementOfComprehensiveIncome extends Page
+class StatementOfComprehensiveIcome extends Page
 {
     protected static string $resource = AssetResource::class;
     protected static string $view = 'filament.resources.asset-resource.pages.statement-of-comprehensive-income';
