@@ -165,6 +165,7 @@ return [
         /*
          * Application Service Providers...
          */
+        App\Providers\EarlyHttpsProvider::class,
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
@@ -173,7 +174,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\FortifyServiceProvider::class,
         App\Providers\JetstreamServiceProvider::class,
-        App\Providers\HttpsUrlProvider::class,
+        // App\Providers\HttpsUrlProvider::class,  // Replaced by EarlyHttpsProvider
     ])->toArray(),
 
     /*
