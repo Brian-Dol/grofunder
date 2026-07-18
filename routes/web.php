@@ -28,6 +28,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Diagnostic endpoint
+require __DIR__ . '/diagnostic.php';
+
 Route::get('/subscription/{amount}', function ($amount) {
     return view('gateways.lenco.lencoPayments', ['amount' => decrypt($amount)]);
 })->name('subscription.lenco');
