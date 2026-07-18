@@ -46,6 +46,13 @@ COPY . .
 # Copy .env.example to .env for defaults
 RUN cp .env.example .env
 
+# CRITICAL: Ensure APP_URL and APP_ENV are set correctly BEFORE composer/npm
+RUN sed -i 's|^APP_ENV=.*|APP_ENV=production|' .env && \
+    sed -i 's|^APP_URL=.*|APP_URL=https://grofunder.onrender.com|' .env && \
+    echo "APP_DEBUG=false" >> .env && \
+    echo "ASSET_URL=https://grofunder.onrender.com" >> .env && \
+    echo "TRUSTED_PROXIES=*" >> .env
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
@@ -73,6 +80,11 @@ RUN echo "<Directory /var/www/html/public>\n\
 # Set app key and run migrations on startup
 RUN echo '#!/bin/bash\n\
 set -e\n\
+echo "=== Render Startup: Environment Variables ==="\n\
+echo "APP_ENV: $APP_ENV"\n\
+echo "APP_URL: $APP_URL"\n\
+echo "APP_DEBUG: $APP_DEBUG"\n\
+echo "TRUSTED_PROXIES: $TRUSTED_PROXIES"\n\
 # Clean ALL cache files to ensure fresh config\n\
 rm -f bootstrap/cache/config.php\n\
 rm -f bootstrap/cache/routes.php\n\
@@ -87,16 +99,21 @@ APP_URL=${APP_URL:-https://grofunder.onrender.com}\n\
 export FORCE_HTTPS=1\n\
 # Regenerate .env ensuring correct values\n\
 sed -i "s|^APP_URL=.*|APP_URL=$APP_URL|" .env\n\
+sed -i "s|^APP_ENV=.*|APP_ENV=production|" .env\n\
 echo "TRUSTED_PROXIES=*" >> .env || true\n\
 echo "FORCE_HTTPS=1" >> .env || true\n\
+echo "ASSET_URL=$APP_URL" >> .env || true\n\
+# Show what is in .env\n\
+echo "=== Final .env values ==="\n\
+grep "APP_URL\|APP_ENV\|ASSET_URL\|TRUSTED_PROXIES" .env || true\n\
 # Clear all caches and rebuild fresh\n\
 php artisan cache:clear 2>/dev/null || true\n\
 php artisan config:clear 2>/dev/null || true\n\
 php artisan view:clear 2>/dev/null || true\n\
 # DO NOT cache routes - let Laravel discover them fresh each time\n\
-# php artisan route:clear 2>/dev/null || true\n\
 # Rebuild config cache only (routes will be discovered dynamically)\n\
 php artisan config:cache 2>/dev/null || true\n\
+echo "=== Config cached ==="\n\
 # Run migrations\n\
 php artisan migrate --force 2>/dev/null || true\n\
 # Start Apache\n\
