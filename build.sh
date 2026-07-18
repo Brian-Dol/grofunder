@@ -1,6 +1,11 @@
 #!/bin/bash
 # Build script for Render.com
 
+# Clean old cache
+rm -rf bootstrap/cache/*.php
+rm -rf storage/framework/cache/data/*
+rm -rf storage/framework/views/*
+
 # Install PHP dependencies
 composer install --no-dev --optimize-autoloader
 

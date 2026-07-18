@@ -72,15 +72,15 @@ RUN echo "<Directory /var/www/html/public>\n\
 # Set app key and run migrations on startup
 RUN echo '#!/bin/bash\n\
 set -e\n\
+# Clean all cache directories\n\
+rm -rf bootstrap/cache/*.php\n\
+rm -rf storage/framework/cache/data/*\n\
+rm -rf storage/framework/views/*\n\
 # Ensure APP_URL defaults to HTTPS if not set\n\
 APP_URL=${APP_URL:-https://grofunder.onrender.com}\n\
 # Update or create .env with proper values\n\
 sed -i "s|^APP_URL=.*|APP_URL=$APP_URL|" .env\n\
 echo "TRUSTED_PROXIES=*" >> .env || true\n\
-# Always clear cache for fresh deployment\n\
-php artisan config:clear 2>/dev/null || true\n\
-php artisan route:clear 2>/dev/null || true\n\
-php artisan view:clear 2>/dev/null || true\n\
 # Rebuild cache\n\
 php artisan config:cache 2>/dev/null || true\n\
 php artisan route:cache 2>/dev/null || true\n\
