@@ -61,10 +61,23 @@ RUN echo "<Directory /var/www/html/public>\n\
     Require all granted\n\
 </Directory>" > /etc/apache2/conf-available/laravel.conf \
     && a2enconf laravel \
-    && sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
+    && sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf \
+    && echo "SetEnvIf X-Forwarded-Proto https HTTPS=on" >> /etc/apache2/conf-available/laravel.conf \
+    && echo "SetEnvIf X-Forwarded-Proto https HTTP_X_FORWARDED_PROTO=https" >> /etc/apache2/conf-available/laravel.conf
 
 # Set app key and run migrations on startup
-RUN echo '#!/bin/bash\nset -e\nphp artisan key:generate --force 2>/dev/null || true\nphp artisan migrate --force 2>/dev/null || true\napache2-foreground' > /entrypoint.sh && \
+RUN echo '#!/bin/bash\n\
+set -e\n\
+# Create .env if it doesn'\''t exist\n\
+if [ ! -f /var/www/html/.env ]; then\n\
+    echo "APP_KEY=${APP_KEY:-base64:tE6w4W4Y+nhteXfQVPCAHKzOnKiUqJqbb2jQ9LTHrKA=}" > /var/www/html/.env\n\
+    echo "APP_URL=${APP_URL:-https://grofunder.onrender.com}" >> /var/www/html/.env\n\
+    echo "TRUSTED_PROXIES=*" >> /var/www/html/.env\n\
+fi\n\
+php artisan config:cache 2>/dev/null || true\n\
+php artisan route:cache 2>/dev/null || true\n\
+php artisan migrate --force 2>/dev/null || true\n\
+apache2-foreground' > /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
 CMD ["/entrypoint.sh"]

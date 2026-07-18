@@ -16,5 +16,5 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Run migrations
-php artisan migrate --force
+# Run migrations (will fail if DB not configured yet)
+php artisan migrate --force || true
