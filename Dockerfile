@@ -43,6 +43,9 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Copy application files
 COPY . .
 
+# Copy .env.example to .env for defaults
+RUN cp .env.example .env
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
@@ -69,12 +72,11 @@ RUN echo "<Directory /var/www/html/public>\n\
 # Set app key and run migrations on startup
 RUN echo '#!/bin/bash\n\
 set -e\n\
-# Create .env if it doesn'\''t exist\n\
-if [ ! -f /var/www/html/.env ]; then\n\
-    echo "APP_KEY=${APP_KEY:-base64:tE6w4W4Y+nhteXfQVPCAHKzOnKiUqJqbb2jQ9LTHrKA=}" > /var/www/html/.env\n\
-    echo "APP_URL=${APP_URL:-https://grofunder.onrender.com}" >> /var/www/html/.env\n\
-    echo "TRUSTED_PROXIES=*" >> /var/www/html/.env\n\
-fi\n\
+# Ensure APP_URL defaults to HTTPS if not set\n\
+APP_URL=${APP_URL:-https://grofunder.onrender.com}\n\
+# Update or create .env with proper values\n\
+sed -i "s|^APP_URL=.*|APP_URL=$APP_URL|" .env\n\
+echo "TRUSTED_PROXIES=*" >> .env || true\n\
 # Always clear cache for fresh deployment\n\
 php artisan config:clear 2>/dev/null || true\n\
 php artisan route:clear 2>/dev/null || true\n\
