@@ -91,10 +91,10 @@ echo "FORCE_HTTPS=1" >> .env || true\n\
 php artisan cache:clear 2>/dev/null || true\n\
 php artisan config:clear 2>/dev/null || true\n\
 php artisan view:clear 2>/dev/null || true\n\
-php artisan route:clear 2>/dev/null || true\n\
-# Rebuild all caches with correct config\n\
+# DO NOT cache routes - let Laravel discover them fresh each time\n\
+# php artisan route:clear 2>/dev/null || true\n\
+# Rebuild config cache only (routes will be discovered dynamically)\n\
 php artisan config:cache 2>/dev/null || true\n\
-php artisan route:cache 2>/dev/null || true\n\
 # Run migrations\n\
 php artisan migrate --force 2>/dev/null || true\n\
 # Start Apache\n\
