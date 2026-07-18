@@ -65,6 +65,11 @@ RUN echo "<Directory /var/www/html/public>\n\
 </Directory>" > /etc/apache2/conf-available/laravel.conf \
     && echo "SetEnvIf X-Forwarded-Proto https HTTPS=on" >> /etc/apache2/conf-available/laravel.conf \
     && echo "SetEnvIf X-Forwarded-Proto https HTTP_X_FORWARDED_PROTO=https" >> /etc/apache2/conf-available/laravel.conf \
+    && echo "# Force HTTPS for asset URLs in output" >> /etc/apache2/conf-available/laravel.conf \
+    && echo "AddOutputFilterByType SUBSTITUTE text/html text/xml text/plain" >> /etc/apache2/conf-available/laravel.conf \
+    && echo "Substitute \"s|href=\\\"http://|href=\\\"https://|i\"" >> /etc/apache2/conf-available/laravel.conf \
+    && echo "Substitute \"s|src=\\\"http://|src=\\\"https://|i\"" >> /etc/apache2/conf-available/laravel.conf \
+    && a2enmod substitute \
     && a2enconf laravel \
     && sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
 
