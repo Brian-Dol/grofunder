@@ -1,0 +1,52 @@
+services:
+  - type: web
+    name: growfunder
+    plan: free
+    runtime: php
+    buildCommand: ./build.sh
+    startCommand: vendor/bin/heroku-php-apache2 public/
+    envVars:
+      - key: APP_NAME
+        value: Growfunder
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        value: base64:tE6w4W4Y+nhteXfQVPCAHKzOnKiUqJqbb2jQ9LTHrKA=
+      - key: APP_URL
+        value: https://growfunder.onrender.com
+      - key: LOG_CHANNEL
+        value: stack
+      - key: LOG_LEVEL
+        value: info
+      - key: CACHE_DRIVER
+        value: file
+      - key: SESSION_DRIVER
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: growfunder-db
+          property: host
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_DATABASE
+        value: growfunder
+      - key: DB_USERNAME
+        fromDatabase:
+          name: growfunder-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: growfunder-db
+          property: password
+
+databases:
+  - name: growfunder-db
+    databaseName: growfunder
+    user: postgres
+    plan: free
