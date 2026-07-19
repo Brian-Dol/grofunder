@@ -38,16 +38,29 @@ class ForceHttpsAssets
                 $content
             );
 
-            // Also handle any remaining http:// URLs in responses that came from production
-            if (!$request->secure() === false) { // If request IS secure
-                $content = preg_replace(
-                    '#href="http://([^"]*)"#i',
-                    'href="https://$1"',
+            // Also handle any remaining http:// URLs in responses
+            // Always replace HTTP with HTTPS in production
+            if (app()->environment('production')) {
+                // Replace href="http:// with href="https://
+                $content = preg_replace_callback(
+                    '#href="(http://[^"]*)"#i',
+                    function($matches) {
+                        return 'href="' . str_replace('http://', 'https://', $matches[1]) . '"';
+                    },
                     $content
                 );
+                // Replace src="http:// with src="https://
+                $content = preg_replace_callback(
+                    '#src="(http://[^"]*)"#i',
+                    function($matches) {
+                        return 'src="' . str_replace('http://', 'https://', $matches[1]) . '"';
+                    },
+                    $content
+                );
+                // Also replace URLs in data attributes and other places
                 $content = preg_replace(
-                    '#src="http://([^"]*)"#i',
-                    'src="https://$1"',
+                    '#http://([a-z0-9\-._~:/?#\[\]@!$&\'()*+,;=]+)#i',
+                    'https://$1',
                     $content
                 );
             }
