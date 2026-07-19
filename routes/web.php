@@ -31,6 +31,9 @@ Route::get('/', function () {
 // Diagnostic endpoint
 require __DIR__ . '/diagnostic.php';
 
+// Debug endpoints
+require __DIR__ . '/debug.php';
+
 Route::get('/subscription/{amount}', function ($amount) {
     return view('gateways.lenco.lencoPayments', ['amount' => decrypt($amount)]);
 })->name('subscription.lenco');

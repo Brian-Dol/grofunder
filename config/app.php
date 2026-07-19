@@ -174,6 +174,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\FortifyServiceProvider::class,
         App\Providers\JetstreamServiceProvider::class,
+        App\Providers\FinalHttpsProvider::class,  // Must be LAST to override Filament's URL generation
         // App\Providers\HttpsUrlProvider::class,  // Replaced by EarlyHttpsProvider
     ])->toArray(),
 

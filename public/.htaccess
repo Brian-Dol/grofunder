@@ -5,6 +5,10 @@
 
     RewriteEngine On
 
+    # Detect HTTPS from reverse proxy headers (for Render.com)
+    RewriteCond %{HTTP:X-Forwarded-Proto} =https
+    RewriteRule .* - [E=HTTPS:on,E=SERVER_PORT:443]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -18,4 +22,12 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+</IfModule>
+
+# Force HTTPS headers
+<IfModule mod_headers.c>
+    Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" env=HTTPS
+    Header always set X-Frame-Options "SAMEORIGIN" env=HTTPS
+    Header always set X-Content-Type-Options "nosniff" env=HTTPS
+    Header always set X-XSS-Protection "1; mode=block" env=HTTPS
 </IfModule>
