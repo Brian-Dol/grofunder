@@ -59,7 +59,9 @@ return [
         ? 'https://grofunder.onrender.com' 
         : env('APP_URL', 'http://localhost'),
 
-    'asset_url' => env('ASSET_URL'),
+    'asset_url' => env('APP_ENV') === 'production'
+        ? 'https://grofunder.onrender.com'
+        : env('ASSET_URL'),
 
     /*
     |--------------------------------------------------------------------------
@@ -174,9 +176,8 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\FortifyServiceProvider::class,
         App\Providers\JetstreamServiceProvider::class,
-        App\Providers\FinalHttpsProvider::class,  // Must be LAST to override Filament's URL generation
-        App\Providers\AssetUrlProvider::class,  // Even more LAST - double-check HTTPS is forced
-        // App\Providers\HttpsUrlProvider::class,  // Replaced by EarlyHttpsProvider
+        App\Providers\FinalHttpsProvider::class,  // Force HTTPS on URL generator for production
+        // App\Providers\HttpsUrlProvider::class,  // Replaced by FinalHttpsProvider
     ])->toArray(),
 
     /*

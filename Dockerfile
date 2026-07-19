@@ -1,125 +1,96 @@
-# Use official PHP image with Apache
-FROM php:8.3-apache AS builder
-
-# Install Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs
+# Use PHP 8.3 with Apache - Clean, simplified Dockerfile
+FROM php:8.3-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
     libpq-dev \
     libzip-dev \
+    unzip \
+    git \
+    curl \
+    libicu-dev \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    libicu-dev \
-    zip \
-    unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-configure intl \
-    && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
-    && docker-php-ext-install -j$(nproc) \
-        pdo \
-        pdo_pgsql \
-        pgsql \
-        zip \
-        gd \
-        intl \
-        exif \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && docker-php-ext-install pdo pdo_pgsql intl gd exif zip
 
-# Enable mod_rewrite
-RUN a2enmod rewrite
+# Enable Apache modules
+RUN a2enmod rewrite headers
+
+# Install Node.js and npm
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && apt-get install -y nodejs
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Install composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Copy application files
+# Copy project files
 COPY . .
-
-# Copy .env.example to .env for defaults
-RUN cp .env.example .env
-
-# CRITICAL: Ensure APP_URL and APP_ENV are set correctly BEFORE composer/npm
-RUN sed -i 's|^APP_ENV=.*|APP_ENV=production|' .env && \
-    sed -i 's|^APP_URL=.*|APP_URL=https://grofunder.onrender.com|' .env && \
-    echo "APP_DEBUG=false" >> .env && \
-    echo "ASSET_URL=https://grofunder.onrender.com" >> .env && \
-    echo "TRUSTED_PROXIES=*" >> .env
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
-# Install Node dependencies and build frontend assets
+# Build frontend assets
 RUN npm install && npm run build
 
 # Set permissions
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 755 storage bootstrap/cache
+RUN chown -R www-data:www-data storage bootstrap/cache && chmod -R 755 storage bootstrap/cache
 
-# Configure Apache
-COPY public /var/www/html/public
-RUN echo "<Directory /var/www/html/public>\n\
-    Options Indexes FollowSymLinks\n\
-    AllowOverride All\n\
-    Require all granted\n\
-</Directory>" > /etc/apache2/conf-available/laravel.conf \
-    && echo "SetEnvIf X-Forwarded-Proto https HTTPS=on" >> /etc/apache2/conf-available/laravel.conf \
-    && echo "SetEnvIf X-Forwarded-Proto https HTTP_X_FORWARDED_PROTO=https" >> /etc/apache2/conf-available/laravel.conf \
-    && a2enmod headers \
-    && a2enconf laravel \
-    && sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf \
-    && echo "\n# Ensure all responses have HTTPS URLs" >> /etc/apache2/conf-available/laravel.conf
+# Configure Apache to serve from /public
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
 
-# Set app key and run migrations on startup
-RUN echo '#!/bin/bash\n\
-set -e\n\
-echo "=== Render Startup: Environment Variables ==="\n\
-echo "APP_ENV: $APP_ENV"\n\
-echo "APP_URL: $APP_URL"\n\
-echo "APP_DEBUG: $APP_DEBUG"\n\
-echo "TRUSTED_PROXIES: $TRUSTED_PROXIES"\n\
-# Clean ALL cache files to ensure fresh config\n\
-rm -f bootstrap/cache/config.php\n\
-rm -f bootstrap/cache/routes.php\n\
-rm -f bootstrap/cache/views.php\n\
-rm -rf bootstrap/cache/*.php\n\
-rm -rf storage/framework/cache/data/*\n\
-rm -rf storage/framework/views/*\n\
-rm -rf storage/framework/sessions/*\n\
-# Ensure APP_URL defaults to HTTPS if not set\n\
-APP_URL=${APP_URL:-https://grofunder.onrender.com}\n\
-# Force scheme detection\n\
-export FORCE_HTTPS=1\n\
-# Regenerate .env ensuring correct values\n\
-sed -i "s|^APP_URL=.*|APP_URL=$APP_URL|" .env\n\
-sed -i "s|^APP_ENV=.*|APP_ENV=production|" .env\n\
-echo "TRUSTED_PROXIES=*" >> .env || true\n\
-echo "FORCE_HTTPS=1" >> .env || true\n\
-echo "ASSET_URL=$APP_URL" >> .env || true\n\
-# Show what is in .env\n\
-echo "=== Final .env values ==="\n\
-grep "APP_URL\|APP_ENV\|ASSET_URL\|TRUSTED_PROXIES" .env || true\n\
-# Clear all caches and rebuild fresh\n\
-php artisan cache:clear 2>/dev/null || true\n\
-php artisan config:clear 2>/dev/null || true\n\
-php artisan view:clear 2>/dev/null || true\n\
-# DO NOT cache routes - let Laravel discover them fresh each time\n\
-# Rebuild config cache only (routes will be discovered dynamically)\n\
-php artisan config:cache 2>/dev/null || true\n\
-echo "=== Config cached ==="\n\
-# Run migrations\n\
-php artisan migrate --force 2>/dev/null || true\n\
-# Start Apache\n\
-apache2-foreground' > /entrypoint.sh && \
+# Add virtual host configuration with HTTPS detection
+RUN echo '<VirtualHost *:80>' > /etc/apache2/sites-available/000-default.conf && \
+    echo '    ServerName localhost' >> /etc/apache2/sites-available/000-default.conf && \
+    echo '    DocumentRoot /var/www/html/public' >> /etc/apache2/sites-available/000-default.conf && \
+    echo '    <Directory /var/www/html/public>' >> /etc/apache2/sites-available/000-default.conf && \
+    echo '        Options Indexes FollowSymLinks' >> /etc/apache2/sites-available/000-default.conf && \
+    echo '        AllowOverride All' >> /etc/apache2/sites-available/000-default.conf && \
+    echo '        Require all granted' >> /etc/apache2/sites-available/000-default.conf && \
+    echo '    </Directory>' >> /etc/apache2/sites-available/000-default.conf && \
+    echo '    # Trust X-Forwarded-Proto from reverse proxy' >> /etc/apache2/sites-available/000-default.conf && \
+    echo '    SetEnvIf X-Forwarded-Proto https HTTPS=on' >> /etc/apache2/sites-available/000-default.conf && \
+    echo '    SetEnvIf X-Forwarded-Proto https REQUEST_SCHEME=https' >> /etc/apache2/sites-available/000-default.conf && \
+    echo '</VirtualHost>'
+
+# Create entrypoint script
+RUN echo '#!/bin/bash' > /entrypoint.sh && \
+    echo 'set -e' >> /entrypoint.sh && \
+    echo 'echo "=== Growfunder Startup ===" ' >> /entrypoint.sh && \
+    echo 'echo "Environment: ${APP_ENV:-production}"' >> /entrypoint.sh && \
+    echo 'echo "App URL: ${APP_URL:-https://grofunder.onrender.com}"' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Copy .env from template if not present' >> /entrypoint.sh && \
+    echo 'if [ ! -f .env ]; then cp .env.example .env; fi' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Ensure production settings' >> /entrypoint.sh && \
+    echo 'APP_URL=${APP_URL:-https://grofunder.onrender.com}' >> /entrypoint.sh && \
+    echo 'sed -i "s|^APP_URL=.*|APP_URL=$APP_URL|" .env' >> /entrypoint.sh && \
+    echo 'sed -i "s|^APP_ENV=.*|APP_ENV=production|" .env' >> /entrypoint.sh && \
+    echo 'sed -i "s|^APP_DEBUG=.*|APP_DEBUG=false|" .env' >> /entrypoint.sh && \
+    echo 'echo "TRUSTED_PROXIES=*" >> .env' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Clear all caches' >> /entrypoint.sh && \
+    echo 'rm -rf bootstrap/cache/*.php storage/framework/cache/data/* storage/framework/views/*' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Generate key' >> /entrypoint.sh && \
+    echo 'php artisan key:generate --force 2>/dev/null || true' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Cache config' >> /entrypoint.sh && \
+    echo 'php artisan config:cache' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Run migrations' >> /entrypoint.sh && \
+    echo 'php artisan migrate --force 2>/dev/null || true' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Start Apache' >> /entrypoint.sh && \
+    echo 'apache2-foreground' >> /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
 CMD ["/entrypoint.sh"]
 
 EXPOSE 80
+
