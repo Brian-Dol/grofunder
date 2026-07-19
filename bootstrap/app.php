@@ -52,4 +52,25 @@ $app->singleton(
 |
 */
 
+// CRITICAL: Force HTTPS configuration at the earliest possible point
+// This runs BEFORE service providers and after the app is created
+if (getenv('APP_ENV') === 'production' || getenv('FORCE_HTTPS') === '1') {
+    $_SERVER['HTTPS'] = 'on';
+    $_ENV['APP_URL'] = $_ENV['APP_URL'] ?? 'https://grofunder.onrender.com';
+    $_ENV['ASSET_URL'] = $_ENV['ASSET_URL'] ?? 'https://grofunder.onrender.com';
+    
+    // Ensure REQUEST_SCHEME is detected correctly
+    if (!isset($_SERVER['REQUEST_SCHEME'])) {
+        $_SERVER['REQUEST_SCHEME'] = 'https';
+        $_SERVER['SERVER_PORT'] = '443';
+    }
+    
+    // If reverse proxy headers indicate HTTPS, set them
+    if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+        $_SERVER['HTTPS'] = 'on';
+        $_SERVER['REQUEST_SCHEME'] = 'https';
+        $_SERVER['SERVER_PORT'] = '443';
+    }
+}
+
 return $app;
