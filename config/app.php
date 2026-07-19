@@ -175,6 +175,7 @@ return [
         App\Providers\FortifyServiceProvider::class,
         App\Providers\JetstreamServiceProvider::class,
         App\Providers\FinalHttpsProvider::class,  // Must be LAST to override Filament's URL generation
+        App\Providers\AssetUrlProvider::class,  // Even more LAST - double-check HTTPS is forced
         // App\Providers\HttpsUrlProvider::class,  // Replaced by EarlyHttpsProvider
     ])->toArray(),
 

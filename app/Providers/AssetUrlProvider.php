@@ -3,42 +3,41 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Routing\UrlGenerator;
 
 class AssetUrlProvider extends ServiceProvider
 {
     /**
-     * Register services.
+     * Register services - runs before boot
      */
     public function register(): void
     {
-        //
+        // This is too early - Filament hasn't been registered yet
     }
 
     /**
-     * Bootstrap services.
+     * Bootstrap services - runs after all services registered
      */
     public function boot(): void
     {
-        // Override the global asset() function to force HTTPS
-        $this->registerAssetMacro();
+        // CRITICAL: Force HTTPS on the URL generator AFTER it's been fully initialized
+        if ($this->app->environment('production')) {
+            $this->forceHttpsOnUrlGenerator();
+        }
     }
 
     /**
-     * Register the asset macro to force HTTPS URLs
+     * Force HTTPS on the URL generator by re-binding it with forced HTTPS
      */
-    private function registerAssetMacro(): void
+    private function forceHttpsOnUrlGenerator(): void
     {
-        if (! function_exists('asset_https')) {
-            function asset_https($path = '') {
-                $url = \Illuminate\Support\Facades\URL::asset($path);
-                
-                // Force HTTPS in production or if request is secure
-                if (app()->environment('production') || \request()->secure()) {
-                    $url = str_replace('http://', 'https://', $url);
-                }
-                
-                return $url;
-            }
+        // Get the current URL generator
+        $current = $this->app->make('url');
+        
+        if ($current instanceof UrlGenerator) {
+            // Apply force HTTPS settings
+            $current->forceScheme('https');
+            $current->forceRootUrl('https://grofunder.onrender.com');
         }
     }
 }
