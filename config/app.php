@@ -55,13 +55,9 @@ return [
     |
     */
 
-    'url' => env('APP_ENV') === 'production' 
-        ? 'https://grofunder.onrender.com' 
-        : env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'http://localhost:8000'),
 
-    'asset_url' => env('APP_ENV') === 'production'
-        ? 'https://grofunder.onrender.com'
-        : env('ASSET_URL'),
+    'asset_url' => env('ASSET_URL', env('APP_URL', 'http://localhost:8000')),
 
     /*
     |--------------------------------------------------------------------------

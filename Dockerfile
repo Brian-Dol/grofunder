@@ -61,33 +61,41 @@ RUN echo '<VirtualHost *:80>' > /etc/apache2/sites-available/000-default.conf &&
 RUN echo '#!/bin/bash' > /entrypoint.sh && \
     echo 'set -e' >> /entrypoint.sh && \
     echo 'echo "=== Growfunder Startup ===" ' >> /entrypoint.sh && \
-    echo 'echo "Environment: ${APP_ENV:-production}"' >> /entrypoint.sh && \
-    echo 'echo "App URL: ${APP_URL:-https://grofunder.onrender.com}"' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Copy .env from template if not present' >> /entrypoint.sh && \
+    echo '# Ensure environment variables are set for Apache/PHP' >> /entrypoint.sh && \
+    echo 'export APP_ENV=production' >> /entrypoint.sh && \
+    echo 'export APP_URL=https://grofunder.onrender.com' >> /entrypoint.sh && \
+    echo 'export APP_DEBUG=false' >> /entrypoint.sh && \
+    echo 'export TRUSTED_PROXIES=*' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo 'echo "Environment: $APP_ENV"' >> /entrypoint.sh && \
+    echo 'echo "App URL: $APP_URL"' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Ensure .env exists' >> /entrypoint.sh && \
     echo 'if [ ! -f .env ]; then cp .env.example .env; fi' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Ensure production settings' >> /entrypoint.sh && \
-    echo 'APP_URL=${APP_URL:-https://grofunder.onrender.com}' >> /entrypoint.sh && \
-    echo 'sed -i "s|^APP_URL=.*|APP_URL=$APP_URL|" .env' >> /entrypoint.sh && \
+    echo '# Update .env with correct values' >> /entrypoint.sh && \
+    echo 'sed -i "s|^APP_URL=.*|APP_URL=https://grofunder.onrender.com|" .env' >> /entrypoint.sh && \
     echo 'sed -i "s|^APP_ENV=.*|APP_ENV=production|" .env' >> /entrypoint.sh && \
     echo 'sed -i "s|^APP_DEBUG=.*|APP_DEBUG=false|" .env' >> /entrypoint.sh && \
-    echo 'echo "TRUSTED_PROXIES=*" >> .env' >> /entrypoint.sh && \
+    echo 'grep -q "TRUSTED_PROXIES" .env || echo "TRUSTED_PROXIES=*" >> .env' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Clear all caches' >> /entrypoint.sh && \
-    echo 'rm -rf bootstrap/cache/*.php storage/framework/cache/data/* storage/framework/views/*' >> /entrypoint.sh && \
+    echo '# Clear all caches BEFORE config:cache' >> /entrypoint.sh && \
+    echo 'rm -rf bootstrap/cache/*.php' >> /entrypoint.sh && \
+    echo 'rm -rf storage/framework/cache/data/*' >> /entrypoint.sh && \
+    echo 'rm -rf storage/framework/views/*' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Generate key' >> /entrypoint.sh && \
+    echo '# Generate app key' >> /entrypoint.sh && \
     echo 'php artisan key:generate --force 2>/dev/null || true' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Cache config' >> /entrypoint.sh && \
+    echo '# Cache config with correct environment values' >> /entrypoint.sh && \
     echo 'php artisan config:cache' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo '# Run migrations' >> /entrypoint.sh && \
     echo 'php artisan migrate --force 2>/dev/null || true' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Start Apache' >> /entrypoint.sh && \
-    echo 'apache2-foreground' >> /entrypoint.sh && \
+    echo 'echo "=== Starting Apache ===" ' >> /entrypoint.sh && \
+    echo 'exec apache2-foreground' >> /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
 CMD ["/entrypoint.sh"]
