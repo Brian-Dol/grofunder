@@ -88,6 +88,9 @@ RUN echo '#!/bin/bash' > /entrypoint.sh && \
     echo '# Generate app key' >> /entrypoint.sh && \
     echo 'php artisan key:generate --force 2>/dev/null || true' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
+    echo '# Explicitly clear routes cache' >> /entrypoint.sh && \
+    echo 'php artisan route:clear 2>/dev/null || true' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
     echo '# Cache config with correct environment values' >> /entrypoint.sh && \
     echo 'php artisan config:cache' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
