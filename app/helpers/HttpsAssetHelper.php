@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers;
+namespace App\Helpers {
 
 /**
  * HTTPS Asset URL Helper
@@ -79,6 +79,10 @@ class HttpsAssetHelper
     }
 }
 
+}
+
+namespace {
+
 /**
  * Global helper function for HTTPS asset URLs
  * 
@@ -101,4 +105,6 @@ if (!function_exists('url_https')) {
     {
         return \App\Helpers\HttpsAssetHelper::url($path, $parameters, $secure);
     }
+}
+
 }
