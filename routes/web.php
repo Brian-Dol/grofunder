@@ -67,19 +67,27 @@ Route::get('/debug-config', function () {
 });
 
 // Test asset_https helper
-Route::get('/debug-asset-https', function () {
+Route::get('/test-https', function () {
     $assetHttpsExists = function_exists('asset_https');
     $result = [
+        'env' => app()->environment(),
+        'app_url' => config('app.url'),
         'asset_https_exists' => $assetHttpsExists,
         'asset_https_callable' => is_callable('asset_https'),
+        'request_scheme' => \Request::getScheme(),
+        'is_https' => \Request::isSecure(),
+        'server_https' => $_SERVER['HTTPS'] ?? 'not set',
+        'x_forwarded_proto' => $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? 'not set',
     ];
     
     if ($assetHttpsExists) {
         $result['asset_https_tests'] = [
-            'asset_https("test.css")' => asset_https('test.css'),
-            'asset_https("landingPage/css/style.css")' => asset_https('landingPage/css/style.css'),
-            'asset_https("icon.png")' => asset_https('icon.png'),
+            'test.css' => asset_https('test.css'),
+            'landingPage/css/style.css' => asset_https('landingPage/css/style.css'),
+            'icon.png' => asset_https('icon.png'),
         ];
+    } else {
+        $result['error'] = 'asset_https function does not exist!';
     }
     
     return response()->json($result);
