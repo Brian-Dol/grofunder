@@ -15,6 +15,19 @@ $app = new Illuminate\Foundation\Application(
     $_ENV['APP_BASE_PATH'] ?? dirname(__DIR__)
 );
 
+// Force HTTPS scheme in production with Render reverse proxy
+// Check for reverse proxy HTTPS headers
+$isHttps = isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' ||
+           isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ||
+           (int)($_SERVER['SERVER_PORT'] ?? 0) === 443;
+
+if ($isHttps || getenv('APP_ENV') === 'production') {
+    // Set environment variables to force HTTPS URLs
+    $_SERVER['HTTPS'] = 'on';
+    $_SERVER['REQUEST_SCHEME'] = 'https';
+    $_SERVER['SERVER_PORT'] = '443';
+}
+
 /*
 |--------------------------------------------------------------------------
 | Bind Important Interfaces
