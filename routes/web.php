@@ -28,6 +28,15 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// DEBUG ROUTE - Returns timestamp to verify deployment
+Route::get('/deployment-check', function () {
+    return response()->json([
+        'deployed' => true,
+        'timestamp' => date('Y-m-d H:i:s'),
+        'message' => 'Deployment check route - code was successfully deployed'
+    ]);
+});
+
 // Debug endpoint - direct inline definition
 Route::get('/debug-config', function () {
     return response()->json([

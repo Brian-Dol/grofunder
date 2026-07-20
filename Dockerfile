@@ -91,11 +91,14 @@ RUN echo '#!/bin/bash' > /entrypoint.sh && \
     echo '# Explicitly clear routes cache' >> /entrypoint.sh && \
     echo 'php artisan route:clear 2>/dev/null || true' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
+    echo '# AGGRESSIVE: Remove all storage/framework/views compiled files' >> /entrypoint.sh && \
+    echo 'find storage/framework/views -type f -delete 2>/dev/null || true' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Clear view cache' >> /entrypoint.sh && \
+    echo 'php artisan view:clear 2>/dev/null || true' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
     echo '# Cache config with correct environment values' >> /entrypoint.sh && \
     echo 'php artisan config:cache' >> /entrypoint.sh && \
-    echo '' >> /entrypoint.sh && \
-    echo '# Explicitly clear and rebuild views with correct config' >> /entrypoint.sh && \
-    echo 'php artisan view:clear' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo '# Run migrations' >> /entrypoint.sh && \
     echo 'php artisan migrate --force 2>/dev/null || true' >> /entrypoint.sh && \
