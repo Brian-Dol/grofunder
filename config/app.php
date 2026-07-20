@@ -164,6 +164,7 @@ return [
          * Application Service Providers...
          */
         App\Providers\HttpsAssetHelperProvider::class,  // FIRST - registers asset_https() helper
+        App\Providers\ForcedHttpsAssetProvider::class,  // SECOND - Force HTTPS scheme in boot phase
         App\Providers\OverrideAssetUrlProvider::class,  // Must be FIRST after helper - overrides URL service binding
         App\Providers\EarlyHttpsProvider::class,
         App\Providers\AppServiceProvider::class,
