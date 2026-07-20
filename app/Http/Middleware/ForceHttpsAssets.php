@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
 class ForceHttpsAssets
 {
@@ -15,72 +14,48 @@ class ForceHttpsAssets
     {
         $response = $next($request);
 
-        // Only modify text-based responses
+        // Get the content type
         $contentType = $response->headers->get('content-type', '');
-        if (!$this->isTextContent($contentType)) {
+        
+        // Only modify HTML/JSON responses
+        if (strpos($contentType, 'text/html') === false && 
+            strpos($contentType, 'application/json') === false) {
             return $response;
         }
 
         try {
             $content = $response->getContent();
             
-            // Only process if we have content
-            if (!$content || empty($content)) {
+            // Make sure we have content
+            if (empty($content)) {
                 return $response;
             }
 
-            // Replace all http:// URLs with https:// for the app domain
-            // This ensures mixed content is never served
-            $appDomain = parse_url(config('app.url'), PHP_URL_HOST) ?? 'grofunder.onrender.com';
+            // SIMPLE AND EFFECTIVE: Replace all http://grofunder with https://grofunder
+            // This is the most direct approach that will always work
+            $appDomain = 'grofunder.onrender.com';
+            
+            // Direct string replacement for the specific domain
             $content = str_replace(
                 "http://{$appDomain}",
                 "https://{$appDomain}",
                 $content
             );
+            
+            // Also catch any other domain variations
+            $content = preg_replace(
+                '/http:\/\/([a-z0-9\-\.]+\.)?grofunder\.onrender\.com/',
+                'https://${1}grofunder.onrender.com',
+                $content
+            );
 
-            // Also handle any remaining http:// URLs in responses
-            // Always replace HTTP with HTTPS in production
-            if (app()->environment('production')) {
-                // Replace href="http:// with href="https://
-                $content = preg_replace_callback(
-                    '#href="(http://[^"]*)"#i',
-                    function($matches) {
-                        return 'href="' . str_replace('http://', 'https://', $matches[1]) . '"';
-                    },
-                    $content
-                );
-                // Replace src="http:// with src="https://
-                $content = preg_replace_callback(
-                    '#src="(http://[^"]*)"#i',
-                    function($matches) {
-                        return 'src="' . str_replace('http://', 'https://', $matches[1]) . '"';
-                    },
-                    $content
-                );
-                // Also replace URLs in data attributes and other places
-                $content = preg_replace(
-                    '#http://([a-z0-9\-._~:/?#\[\]@!$&\'()*+,;=]+)#i',
-                    'https://$1',
-                    $content
-                );
-            }
-
+            // Set the modified content
             $response->setContent($content);
         } catch (\Exception $e) {
-            // If something goes wrong, just return the response as-is
-            // Don't let the middleware break the application
+            // If something fails, just return original response
+            return $response;
         }
 
         return $response;
-    }
-
-    /**
-     * Check if content is text-based and should be processed
-     */
-    private function isTextContent(string $contentType): bool
-    {
-        return str_contains($contentType, 'text/html') ||
-               str_contains($contentType, 'application/json') ||
-               str_contains($contentType, 'text/plain');
     }
 }
