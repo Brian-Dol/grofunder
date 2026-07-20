@@ -163,7 +163,8 @@ return [
         /*
          * Application Service Providers...
          */
-        App\Providers\OverrideAssetUrlProvider::class,  // Must be FIRST - overrides URL service binding
+        App\Providers\HttpsAssetHelperProvider::class,  // FIRST - registers asset_https() helper
+        App\Providers\OverrideAssetUrlProvider::class,  // Must be FIRST after helper - overrides URL service binding
         App\Providers\EarlyHttpsProvider::class,
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,

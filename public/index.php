@@ -35,31 +35,6 @@ require __DIR__.'/../vendor/autoload.php';
 
 /*
 |--------------------------------------------------------------------------
-| Load HTTPS Helpers - Early Bootstrap
-|--------------------------------------------------------------------------
-|
-| Load custom HTTPS helpers that ensure all asset() calls generate HTTPS URLs.
-|
-*/
-
-require __DIR__.'/../app/helpers/HttpsAssetHelper.php';
-
-/*
-|--------------------------------------------------------------------------
-| Load HTTPS Environment Variables - Early Bootstrap
-|--------------------------------------------------------------------------
-|
-| In production with Render's reverse proxy, we must force all asset URLs
-| to HTTPS to avoid mixed content errors. This override is loaded early.
-|
-*/
-
-if (file_exists($httpsHelpers = __DIR__.'/../bootstrap/https-helpers.php')) {
-    require $httpsHelpers;
-}
-
-/*
-|--------------------------------------------------------------------------
 | Run The Application
 |--------------------------------------------------------------------------
 |
