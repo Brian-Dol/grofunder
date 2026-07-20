@@ -47,10 +47,10 @@
                   <div class="card mb-4">
                     <div class="card-body text-center">
                     @if(auth()->user()->profilepic)
-                      <img src="{{asset('attatchments_loans/'.auth()->user()->profilepic)}}" alt="avatar"
+                      <img src="{{asset_https('attatchments_loans/'.auth()->user()->profilepic())}}" alt="avatar"
                         class="rounded-circle img-fluid" style="width: 150px;">
                         @else 
-                        <img src="{{asset('avatar.png')}}" alt="avatar"
+                        <img src="{{asset_https('avatar.png')}}" alt="avatar"
                         class="rounded-circle img-fluid" style="width: 150px;">
                         @endif
                       <h5 class="my-3">{{ $borrower->first_name.' '.$borrower->last_name }}</h5>

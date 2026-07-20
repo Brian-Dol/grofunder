@@ -10,8 +10,8 @@
   <!-- DEBUG: app.url={{ config('app.url') }} -->
   <!-- DEBUG: app.asset_url={{ config('app.asset_url') }} -->
   <!-- DEBUG: REQUEST_SCHEME={{ \Request::getScheme() }} -->
-  <!-- DEBUG: asset()={{ asset('landingPage/css/style.css') }} -->
-  <link href="{{ asset('landingPage/css/style.css') }}" rel="stylesheet" />
+  <!-- DEBUG: asset_https()={{ asset_https('landingPage/css/style.css') }} -->
+  <link href="{{ asset_https('landingPage/css/style.css') }}" rel="stylesheet" />
 
   <title>{{ config('app.name') }}</title>
 
@@ -19,7 +19,7 @@
   <meta property="og:title" content="{{ config('app.name') }}" />
   <meta property="og:description"
     content="Lendfy is a loan management software that helps lenders automate workflows, reduce manual work, and launch new products with ease." />
-  <meta property="og:image" content="{{ asset('icon.png') }}" />
+  <meta property="og:image" content="{{ asset_https('icon.png') }}" />
   <meta property="og:url" content="{{ url()->current() }}" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="{{ config('app.name') }}" />
@@ -30,7 +30,7 @@
   <meta name="twitter:title" content="{{ config('app.name') }}" />
   <meta name="twitter:description"
     content="Lendfy is a loan management software that helps lenders automate workflows, reduce manual work, and launch new products with ease." />
-  <meta name="twitter:image" content="{{ asset('icon.png') }}" />
+  <meta name="twitter:image" content="{{ asset_https('icon.png') }}" />
   <meta name="twitter:url" content="{{ url()->current() }}" />
   <meta name="twitter:site" content="" />
 
@@ -45,7 +45,7 @@
       <div class="header__wrapper">
         <a class="c-link" href="#">
           <div class="c-logo">
-            <img src="{{ asset('icon.png') }}" alt="Logo" class="c-logo__img" style="border-radius:100%" />
+            <img src="{{ asset_https('icon.png') }}" alt="Logo" class="c-logo__img" style="border-radius:100%" />
           </div>
         </a>
         <nav class="c-nav">
@@ -125,7 +125,7 @@
           </div>
 
           <div class="c-hero__img-holder">
-            <img class="c-hero__img" src="{{ asset('landingPage/img/dashboard2.PNG') }}" alt="Dashboard" />
+            <img class="c-hero__img" src="{{ asset_https('landingPage/img/dashboard2.PNG') }}" alt="Dashboard" />
           </div>
         </div>
       </div>
@@ -154,7 +154,7 @@
               </p>
             </div>
             <div class="c-card__img-holder">
-              <img class="c-card__img" src="{{ asset('landingPage/img/card-1.png') }}" alt="" />
+              <img class="c-card__img" src="{{ asset_https('landingPage/img/card-1.png') }}" alt="" />
             </div>
           </article>
 
@@ -169,7 +169,7 @@
               </p>
             </div>
             <div class="c-card__img-holder">
-              <img class="c-card__img" src="{{ asset('landingPage/img/card-2.png') }}" alt="" />
+              <img class="c-card__img" src="{{ asset_https('landingPage/img/card-2.png') }}" alt="" />
             </div>
           </article>
 
@@ -184,7 +184,7 @@
               </p>
             </div>
             <div class="c-card__img-holder">
-              <img class="c-card__img" src="{{ asset('landingPage/img/card-3.png') }}" alt="" />
+              <img class="c-card__img" src="{{ asset_https('landingPage/img/card-3.png') }}" alt="" />
             </div>
           </article>
         </div>
@@ -196,7 +196,7 @@
         <div class="box box--grid">
           <article class="c-feature">
             <div class="c-feature__img-holder">
-              <img class="c-feature__img" src="{{ asset('landingPage/img/feature-1.png') }}" alt="" />
+              <img class="c-feature__img" src="{{ asset_https('landingPage/img/feature-1.png') }}" alt="" />
             </div>
             <div class="c-feature__content">
               <h3 class="c-feature__title heading heading--3">
@@ -211,7 +211,7 @@
 
           <article class="c-feature">
             <div class="c-feature__img-holder">
-              <img class="c-feature__img" src="{{ asset('landingPage/img/feature-2.png') }}" alt="" />
+              <img class="c-feature__img" src="{{ asset_https('landingPage/img/feature-2.png') }}" alt="" />
             </div>
             <div class="c-feature__content">
               <h3 class="c-feature__title heading heading--3">
@@ -226,7 +226,7 @@
 
           <article class="c-feature">
             <div class="c-feature__img-holder">
-              <img class="c-feature__img" src="{{ asset('landingPage/img/feature-3.png') }}" alt="" />
+              <img class="c-feature__img" src="{{ asset_https('landingPage/img/feature-3.png') }}" alt="" />
             </div>
             <div class="c-feature__content">
               <h3 class="c-feature__title heading heading--3">
@@ -399,7 +399,7 @@
         <div class="c-footer__box">
           <a class="c-link" href="#">
             <div class="c-logo">
-              <img src="{{ asset('icon.png') }}" alt="Logo" class="c-logo__img" style="border-radius:100%" />
+              <img src="{{ asset_https('icon.png') }}" alt="Logo" class="c-logo__img" style="border-radius:100%" />
               <!-- <span class="c-logo__text c-logo__text--white">Login</span> -->
             </div>
           </a>
@@ -410,13 +410,13 @@
         <div class="c-footer__box">
           <div class="c-footer__icons">
             <a href="#">
-              <img class="c-footer__icon" src="{{ asset('landingPage/img/instagram.svg') }}" alt="Instagram" />
+              <img class="c-footer__icon" src="{{ asset_https('landingPage/img/instagram.svg') }}" alt="Instagram" />
             </a>
             <a href="#">
-              <img class="c-footer__icon" src="{{ asset('landingPage/img/twitter.svg') }}" alt="Twitter" />
+              <img class="c-footer__icon" src="{{ asset_https('landingPage/img/twitter.svg') }}" alt="Twitter" />
             </a>
             <a href="#">
-              <img class="c-footer__icon" src="{{ asset('landingPage/img/facebook.svg') }}" alt="Facebook" />
+              <img class="c-footer__icon" src="{{ asset_https('landingPage/img/facebook.svg') }}" alt="Facebook" />
             </a>
           </div>
           <ul class="c-list c-list--flex c-list--align-right">
