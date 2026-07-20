@@ -93,6 +93,11 @@ Route::get('/test-https', function () {
     return response()->json($result);
 });
 
+// Simple test for middleware - returns HTML with HTTP URLs that middleware should convert
+Route::get('/test-middleware', function () {
+    return '<html><body><h1>Test</h1><p>Visit <a href="http://grofunder.onrender.com/css/test.css">styles</a></p></body></html>';
+});
+
 // Diagnostic endpoint
 require __DIR__ . '/diagnostic.php';
 
