@@ -14,46 +14,43 @@ class ForceHttpsAssets
     {
         $response = $next($request);
 
+        // Add a debug header to prove the middleware ran
+        $response->header('X-Force-Https-Assets', 'middleware-ran');
+
         // Get the content type
         $contentType = $response->headers->get('content-type', '');
         
-        // Only modify HTML/JSON responses
-        if (strpos($contentType, 'text/html') === false && 
-            strpos($contentType, 'application/json') === false) {
+        // Only modify HTML responses (not JSON, not images, etc)
+        if (strpos($contentType, 'text/html') === false) {
             return $response;
         }
 
         try {
-            $content = $response->getContent();
+            // Get the response content
+            $content = (string) $response->getContent();
             
             // Make sure we have content
-            if (empty($content)) {
+            if (strlen($content) === 0) {
                 return $response;
             }
 
-            // SIMPLE AND EFFECTIVE: Replace all http://grofunder with https://grofunder
-            // This is the most direct approach that will always work
-            $appDomain = 'grofunder.onrender.com';
-            
-            // Direct string replacement for the specific domain
-            $content = str_replace(
-                "http://{$appDomain}",
-                "https://{$appDomain}",
-                $content
-            );
-            
-            // Also catch any other domain variations
-            $content = preg_replace(
-                '/http:\/\/([a-z0-9\-\.]+\.)?grofunder\.onrender\.com/',
-                'https://${1}grofunder.onrender.com',
-                $content
-            );
-
-            // Set the modified content
-            $response->setContent($content);
+            // Check if there are HTTP URLs to fix
+            if (strpos($content, 'http://grofunder.onrender.com') !== false) {
+                // Replace all http://grofunder.onrender.com with https://
+                $newContent = str_replace(
+                    'http://grofunder.onrender.com',
+                    'https://grofunder.onrender.com',
+                    $content
+                );
+                
+                // Only update if content actually changed
+                if ($newContent !== $content) {
+                    $response->setContent($newContent);
+                    $response->header('X-Https-Conversion', 'applied');
+                }
+            }
         } catch (\Exception $e) {
-            // If something fails, just return original response
-            return $response;
+            // Silently fail - don't break the response
         }
 
         return $response;
