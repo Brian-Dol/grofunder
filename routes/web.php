@@ -66,6 +66,25 @@ Route::get('/debug-config', function () {
     ]);
 });
 
+// Test asset_https helper
+Route::get('/debug-asset-https', function () {
+    $assetHttpsExists = function_exists('asset_https');
+    $result = [
+        'asset_https_exists' => $assetHttpsExists,
+        'asset_https_callable' => is_callable('asset_https'),
+    ];
+    
+    if ($assetHttpsExists) {
+        $result['asset_https_tests'] = [
+            'asset_https("test.css")' => asset_https('test.css'),
+            'asset_https("landingPage/css/style.css")' => asset_https('landingPage/css/style.css'),
+            'asset_https("icon.png")' => asset_https('icon.png'),
+        ];
+    }
+    
+    return response()->json($result);
+});
+
 // Diagnostic endpoint
 require __DIR__ . '/diagnostic.php';
 
