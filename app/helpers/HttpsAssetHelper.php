@@ -19,17 +19,14 @@ class HttpsAssetHelper
      */
     public static function asset($path, $secure = null)
     {
-        // Get the base URL from config
-        $baseUrl = config('app.asset_url') ?: config('app.url', 'https://grofunder.onrender.com');
-        
-        // Ensure HTTPS scheme
-        $baseUrl = self::ensureHttps($baseUrl);
+        // Always use HTTPS for production deployment
+        // Force scheme to https regardless of config
+        $baseUrl = 'https://grofunder.onrender.com';
         
         // Build the full asset URL
         $url = rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
         
-        // Final HTTPS check
-        return self::ensureHttps($url);
+        return $url;
     }
 
     /**
@@ -42,10 +39,8 @@ class HttpsAssetHelper
      */
     public static function url($path = null, $parameters = [], $secure = null)
     {
-        $baseUrl = config('app.url', 'https://grofunder.onrender.com');
-        
-        // Ensure HTTPS
-        $baseUrl = self::ensureHttps($baseUrl);
+        // Always use HTTPS for production
+        $baseUrl = 'https://grofunder.onrender.com';
         
         if ($path === null) {
             return $baseUrl;
@@ -53,8 +48,12 @@ class HttpsAssetHelper
         
         $url = rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
         
-        // Final HTTPS check
-        return self::ensureHttps($url);
+        // Add query parameters if provided
+        if (!empty($parameters)) {
+            $url .= '?' . http_build_query($parameters);
+        }
+        
+        return $url;
     }
 
     /**
