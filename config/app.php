@@ -174,6 +174,7 @@ return [
         App\Providers\FortifyServiceProvider::class,
         App\Providers\JetstreamServiceProvider::class,
         App\Providers\FinalHttpsProvider::class,  // Force HTTPS on URL generator for production
+        App\Providers\HttpsAssetUrlProvider::class,  // Patch asset URLs to ensure HTTPS in production
         // App\Providers\HttpsUrlProvider::class,  // Replaced by FinalHttpsProvider
     ])->toArray(),
 
