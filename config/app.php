@@ -163,10 +163,6 @@ return [
         /*
          * Application Service Providers...
          */
-        App\Providers\HttpsAssetHelperProvider::class,  // FIRST - registers asset_https() helper
-        App\Providers\ForcedHttpsAssetProvider::class,  // SECOND - Force HTTPS scheme in boot phase
-        App\Providers\OverrideAssetUrlProvider::class,  // Must be FIRST after helper - overrides URL service binding
-        App\Providers\EarlyHttpsProvider::class,
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
@@ -175,9 +171,6 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\FortifyServiceProvider::class,
         App\Providers\JetstreamServiceProvider::class,
-        App\Providers\FinalHttpsProvider::class,  // Force HTTPS on URL generator for production
-        App\Providers\HttpsAssetUrlProvider::class,  // Patch asset URLs to ensure HTTPS in production
-        // App\Providers\HttpsUrlProvider::class,  // Replaced by FinalHttpsProvider
     ])->toArray(),
 
     /*

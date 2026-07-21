@@ -34,19 +34,26 @@ class ForceHttpsAssets
                 return $response;
             }
 
-            // Check if there are HTTP URLs to fix
-            if (strpos($content, 'http://grofunder.onrender.com') !== false) {
-                // Replace all http://grofunder.onrender.com with https://
-                $newContent = str_replace(
-                    'http://grofunder.onrender.com',
-                    'https://grofunder.onrender.com',
-                    $content
-                );
+            // Get the app URL from configuration
+            $appUrl = config('app.url');
+            
+            // Replace all http:// scheme URLs with https:// for production
+            if (app()->environment('production') && $appUrl) {
+                // Extract domain from APP_URL
+                $domain = parse_url($appUrl, PHP_URL_HOST);
                 
-                // Only update if content actually changed
-                if ($newContent !== $content) {
-                    $response->setContent($newContent);
-                    $response->header('X-Https-Conversion', 'applied');
+                if ($domain) {
+                    $httpUrl = 'http://' . $domain;
+                    $httpsUrl = 'https://' . $domain;
+                    
+                    // Replace HTTP with HTTPS for this domain
+                    $newContent = str_replace($httpUrl, $httpsUrl, $content);
+                    
+                    // Only update if content actually changed
+                    if ($newContent !== $content) {
+                        $response->setContent($newContent);
+                        $response->header('X-Https-Conversion', 'applied');
+                    }
                 }
             }
         } catch (\Exception $e) {

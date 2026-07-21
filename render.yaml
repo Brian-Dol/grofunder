@@ -16,6 +16,10 @@ services:
         value: base64:tE6w4W4Y+nhteXfQVPCAHKzOnKiUqJqbb2jQ9LTHrKA=
       - key: APP_URL
         value: https://growfunder.onrender.com
+      - key: ASSET_URL
+        value: https://growfunder.onrender.com
+      - key: TRUSTED_PROXIES
+        value: "*"
       - key: LOG_CHANNEL
         value: stack
       - key: LOG_LEVEL

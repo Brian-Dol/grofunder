@@ -37,6 +37,11 @@ RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 # Build frontend assets
 RUN npm install && npm run build
 
+# DELETE any pre-generated cache files from local build
+RUN rm -rf bootstrap/cache/*.php 2>/dev/null || true
+RUN rm -rf storage/framework/cache/* 2>/dev/null || true  
+RUN rm -rf storage/framework/views/* 2>/dev/null || true
+
 # Set permissions
 RUN chown -R www-data:www-data storage bootstrap/cache && chmod -R 755 storage bootstrap/cache
 
@@ -57,51 +62,44 @@ RUN echo '<VirtualHost *:80>' > /etc/apache2/sites-available/000-default.conf &&
     echo '    SetEnvIf X-Forwarded-Proto https REQUEST_SCHEME=https' >> /etc/apache2/sites-available/000-default.conf && \
     echo '</VirtualHost>'
 
-# Create entrypoint script
+# Ensure environment variables are set for Apache/PHP
 RUN echo '#!/bin/bash' > /entrypoint.sh && \
     echo 'set -e' >> /entrypoint.sh && \
     echo 'echo "=== Growfunder Startup ===" ' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Ensure environment variables are set for Apache/PHP' >> /entrypoint.sh && \
-    echo 'export APP_ENV=production' >> /entrypoint.sh && \
-    echo 'export APP_URL=https://grofunder.onrender.com' >> /entrypoint.sh && \
-    echo 'export APP_DEBUG=false' >> /entrypoint.sh && \
-    echo 'export TRUSTED_PROXIES=*' >> /entrypoint.sh && \
-    echo '' >> /entrypoint.sh && \
+    echo '# Environment variables are already provided by Render via render.yaml' >> /entrypoint.sh && \
+    echo '# They are automatically available in the container environment' >> /entrypoint.sh && \
     echo 'echo "Environment: $APP_ENV"' >> /entrypoint.sh && \
     echo 'echo "App URL: $APP_URL"' >> /entrypoint.sh && \
+    echo 'echo "Asset URL: $ASSET_URL"' >> /entrypoint.sh && \
+    echo 'echo "Trusted Proxies: $TRUSTED_PROXIES"' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo '# Ensure .env exists' >> /entrypoint.sh && \
     echo 'if [ ! -f .env ]; then cp .env.example .env; fi' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Update .env with correct values' >> /entrypoint.sh && \
-    echo 'sed -i "s|^APP_URL=.*|APP_URL=https://grofunder.onrender.com|" .env' >> /entrypoint.sh && \
-    echo 'sed -i "s|^APP_ENV=.*|APP_ENV=production|" .env' >> /entrypoint.sh && \
-    echo 'sed -i "s|^APP_DEBUG=.*|APP_DEBUG=false|" .env' >> /entrypoint.sh && \
-    echo 'grep -q "TRUSTED_PROXIES" .env || echo "TRUSTED_PROXIES=*" >> .env' >> /entrypoint.sh && \
+    echo '# Smart cache clearing - only if needed' >> /entrypoint.sh && \
+    echo 'if [ ! -f bootstrap/cache/config.php ]; then' >> /entrypoint.sh && \
+    echo '  echo "Clearing cache directories..."' >> /entrypoint.sh && \
+    echo '  rm -rf bootstrap/cache/*.php 2>/dev/null || true' >> /entrypoint.sh && \
+    echo '  rm -rf storage/framework/cache/data/* 2>/dev/null || true' >> /entrypoint.sh && \
+    echo 'fi' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Clear all caches BEFORE config:cache' >> /entrypoint.sh && \
-    echo 'rm -rf bootstrap/cache/*.php' >> /entrypoint.sh && \
-    echo 'rm -rf storage/framework/cache/data/*' >> /entrypoint.sh && \
-    echo 'rm -rf storage/framework/views/*' >> /entrypoint.sh && \
+    echo '# Generate app key if APP_KEY is empty' >> /entrypoint.sh && \
+    echo 'if [ -z "$APP_KEY" ]; then' >> /entrypoint.sh && \
+    echo '  echo "Generating APP_KEY..."' >> /entrypoint.sh && \
+    echo '  php artisan key:generate --force' >> /entrypoint.sh && \
+    echo 'else' >> /entrypoint.sh && \
+    echo '  echo "APP_KEY already set"' >> /entrypoint.sh && \
+    echo 'fi' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Generate app key' >> /entrypoint.sh && \
-    echo 'php artisan key:generate --force 2>/dev/null || true' >> /entrypoint.sh && \
-    echo '' >> /entrypoint.sh && \
-    echo '# Explicitly clear routes cache' >> /entrypoint.sh && \
-    echo 'php artisan route:clear 2>/dev/null || true' >> /entrypoint.sh && \
-    echo '' >> /entrypoint.sh && \
-    echo '# AGGRESSIVE: Remove all storage/framework/views compiled files' >> /entrypoint.sh && \
-    echo 'find storage/framework/views -type f -delete 2>/dev/null || true' >> /entrypoint.sh && \
-    echo '' >> /entrypoint.sh && \
-    echo '# Clear view cache' >> /entrypoint.sh && \
-    echo 'php artisan view:clear 2>/dev/null || true' >> /entrypoint.sh && \
-    echo '' >> /entrypoint.sh && \
-    echo '# Cache config with correct environment values' >> /entrypoint.sh && \
+    echo '# Cache configuration' >> /entrypoint.sh && \
+    echo 'echo "Caching configuration..."' >> /entrypoint.sh && \
     echo 'php artisan config:cache' >> /entrypoint.sh && \
+    echo 'php artisan route:cache' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Run migrations' >> /entrypoint.sh && \
-    echo 'php artisan migrate --force 2>/dev/null || true' >> /entrypoint.sh && \
+    echo '# Run migrations if database is available' >> /entrypoint.sh && \
+    echo 'echo "Running migrations..."' >> /entrypoint.sh && \
+    echo 'php artisan migrate --force 2>/dev/null || echo "Migrations skipped (DB not ready)"' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo 'echo "=== Starting Apache ===" ' >> /entrypoint.sh && \
     echo 'exec apache2-foreground' >> /entrypoint.sh && \

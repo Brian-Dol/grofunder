@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
 
 class HttpsAssetHelperProvider extends ServiceProvider
 {
@@ -16,11 +17,16 @@ class HttpsAssetHelperProvider extends ServiceProvider
     }
 
     /**
-     * Bootstrap the service.
+     * Bootstrap the service - override asset() function to always use HTTPS
      */
     public function boot(): void
     {
-        // Nothing to bootstrap
+        // CRITICAL: Force HTTPS scheme so asset() calls generate HTTPS URLs
+        if ($this->app->environment('production') || 
+            (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')) {
+            URL::forceScheme('https');
+        }
     }
 }
+
 
