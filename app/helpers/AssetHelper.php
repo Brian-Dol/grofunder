@@ -13,12 +13,8 @@ class AssetHelper
     {
         $url = \Illuminate\Support\Facades\URL::asset($path);
         
-        // Force HTTPS in production or if request is already HTTPS
-        if (app()->environment('production') || request()->secure()) {
-            $url = str_replace('http://grofunder.onrender.com', 'https://grofunder.onrender.com', $url);
-            $url = preg_replace('#^http://#', 'https://', $url);
-        }
-        
+        // Laravel should handle HTTPS with config + TrustProxies middleware
+        // No need to hardcode domain or force replace
         return $url;
     }
 }

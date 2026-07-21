@@ -19,9 +19,8 @@ class HttpsAssetHelper
      */
     public static function asset($path, $secure = null)
     {
-        // Always use HTTPS for production deployment
-        // Force scheme to https regardless of config
-        $baseUrl = 'https://grofunder.onrender.com';
+        // Use config-based URL in production
+        $baseUrl = config('app.asset_url', config('app.url', 'https://growfunder.onrender.com'));
         
         // Build the full asset URL
         $url = rtrim($baseUrl, '/') . '/' . ltrim($path, '/');

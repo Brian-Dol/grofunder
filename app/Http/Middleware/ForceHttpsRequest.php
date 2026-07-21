@@ -8,21 +8,18 @@ use Illuminate\Http\Request;
 class ForceHttpsRequest
 {
     /**
-     * Handle an incoming request - runs BEFORE routing to force HTTPS detection
+     * Handle an incoming request - trust Render's reverse proxy HTTPS headers
      */
     public function handle(Request $request, Closure $next)
     {
-        // Force HTTPS detection at the request level when behind a reverse proxy
-        if ($request->header('X-Forwarded-Proto') === 'https') {
-            // This tells Laravel the connection is HTTPS
-            $request->server->set('HTTPS', 'on');
-            $request->server->set('REQUEST_SCHEME', 'https');
-            $request->server->set('SERVER_PORT', '443');
-            
-            // Ensure the URL generator uses HTTPS
+        // Render sends X-Forwarded-Proto header for HTTPS
+        // The TrustProxies middleware already handles this
+        // This middleware just ensures HTTPS URLs are generated in production
+        if (app()->environment('production')) {
             app('url')->forceScheme('https');
         }
 
         return $next($request);
     }
 }
+

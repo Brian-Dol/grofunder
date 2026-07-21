@@ -22,7 +22,7 @@ class HttpsAssetUrlProvider extends ServiceProvider
         // In production environment with Render proxy, force HTTPS early
         if (app()->environment('production')) {
             $this->app['url.generator']->forceScheme('https');
-            $this->app['url.generator']->forceRootUrl('https://grofunder.onrender.com');
+            $this->app['url.generator']->forceRootUrl(config('app.url'));
         }
     }
 
@@ -35,7 +35,7 @@ class HttpsAssetUrlProvider extends ServiceProvider
         if (app()->environment('production')) {
             // Re-force in case it was overridden
             URL::forceScheme('https');
-            URL::forceRootUrl('https://grofunder.onrender.com');
+            URL::forceRootUrl(config('app.url'));
             
             // Patch the URL generator to ensure asset() generates HTTPS
             $this->patchAssetUrls();

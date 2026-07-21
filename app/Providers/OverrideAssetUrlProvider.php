@@ -21,7 +21,7 @@ class OverrideAssetUrlProvider extends ServiceProvider
             // Always force HTTPS on production
             if ($app->environment('production')) {
                 $url->forceScheme('https');
-                $url->forceRootUrl('https://grofunder.onrender.com');
+                $url->forceRootUrl(config('app.url'));
             }
 
             return $url;
@@ -37,7 +37,7 @@ class OverrideAssetUrlProvider extends ServiceProvider
             // Get and re-configure the URL generator after all providers have loaded
             $url = $this->app->make('url');
             $url->forceScheme('https');
-            $url->forceRootUrl('https://grofunder.onrender.com');
+            $url->forceRootUrl(config('app.url'));
         }
     }
 }
