@@ -60,7 +60,7 @@ RUN echo '<VirtualHost *:80>' > /etc/apache2/sites-available/000-default.conf &&
     echo '    # Trust X-Forwarded-Proto from reverse proxy' >> /etc/apache2/sites-available/000-default.conf && \
     echo '    SetEnvIf X-Forwarded-Proto https HTTPS=on' >> /etc/apache2/sites-available/000-default.conf && \
     echo '    SetEnvIf X-Forwarded-Proto https REQUEST_SCHEME=https' >> /etc/apache2/sites-available/000-default.conf && \
-    echo '</VirtualHost>'
+    echo '</VirtualHost>' >> /etc/apache2/sites-available/000-default.conf
 
 # Ensure environment variables are set for Apache/PHP
 RUN echo '#!/bin/bash' > /entrypoint.sh && \

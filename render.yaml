@@ -2,9 +2,12 @@ services:
   - type: web
     name: growfunder
     plan: free
-    runtime: php
-    buildCommand: ./build.sh
-    startCommand: vendor/bin/heroku-php-apache2 public/
+    runtime: docker
+    # Dockerfile handles all build and startup
+    # Render will automatically:
+    # 1. Build the Docker image from Dockerfile
+    # 2. Run the container with CMD from Dockerfile
+    # 3. Expose port 80 as specified in Dockerfile
     envVars:
       - key: APP_NAME
         value: Growfunder
