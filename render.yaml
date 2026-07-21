@@ -3,11 +3,59 @@ services:
     name: growfunder
     plan: free
     runtime: docker
-    # Dockerfile handles all build and startup
-    # Render will automatically:
-    # 1. Build the Docker image from Dockerfile
-    # 2. Run the container with CMD from Dockerfile
-    # 3. Expose port 80 as specified in Dockerfile
+    # Docker runtime - Dockerfile and entrypoint.sh handle everything
+    # Environment variables set here will be available in container
+    envVars:
+      - key: APP_NAME
+        value: Growfunder
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        value: 
+      - key: APP_URL
+        value: https://grofunder1.onrender.com
+      - key: ASSET_URL
+        value: https://grofunder1.onrender.com
+      - key: TRUSTED_PROXIES
+        value: "*"
+      - key: LOG_CHANNEL
+        value: stack
+      - key: LOG_LEVEL
+        value: info
+      - key: CACHE_DRIVER
+        value: file
+      - key: SESSION_DRIVER
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: growfunder-db
+          property: host
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_DATABASE
+        value: growfunder
+      - key: DB_USERNAME
+        fromDatabase:
+          name: growfunder-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: growfunder-db
+          property: password
+      - key: MAIL_MAILER
+        value: log
+
+databases:
+  - name: growfunder-db
+    databaseName: growfunder
+    user: postgres
+    plan: free
     envVars:
       - key: APP_NAME
         value: Growfunder

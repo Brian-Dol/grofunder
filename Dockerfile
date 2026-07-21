@@ -67,33 +67,44 @@ RUN echo '#!/bin/bash' > /entrypoint.sh && \
     echo 'set -e' >> /entrypoint.sh && \
     echo 'echo "=== Growfunder Startup ===" ' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Environment variables are already provided by Render via render.yaml' >> /entrypoint.sh && \
-    echo '# They are automatically available in the container environment' >> /entrypoint.sh && \
-    echo 'echo "Environment: $APP_ENV"' >> /entrypoint.sh && \
-    echo 'echo "App URL: $APP_URL"' >> /entrypoint.sh && \
-    echo 'echo "Asset URL: $ASSET_URL"' >> /entrypoint.sh && \
-    echo 'echo "Trusted Proxies: $TRUSTED_PROXIES"' >> /entrypoint.sh && \
+    echo '# Generate .env from environment variables' >> /entrypoint.sh && \
+    echo 'cat > .env << EOF' >> /entrypoint.sh && \
+    echo 'APP_NAME=${APP_NAME:-Growfunder}' >> /entrypoint.sh && \
+    echo 'APP_ENV=${APP_ENV:-production}' >> /entrypoint.sh && \
+    echo 'APP_DEBUG=${APP_DEBUG:-false}' >> /entrypoint.sh && \
+    echo 'APP_KEY=${APP_KEY}' >> /entrypoint.sh && \
+    echo 'APP_URL=${APP_URL}' >> /entrypoint.sh && \
+    echo 'ASSET_URL=${ASSET_URL}' >> /entrypoint.sh && \
+    echo 'TRUSTED_PROXIES=${TRUSTED_PROXIES:-*}' >> /entrypoint.sh && \
+    echo 'LOG_CHANNEL=${LOG_CHANNEL:-stack}' >> /entrypoint.sh && \
+    echo 'LOG_LEVEL=${LOG_LEVEL:-info}' >> /entrypoint.sh && \
+    echo 'CACHE_DRIVER=${CACHE_DRIVER:-file}' >> /entrypoint.sh && \
+    echo 'SESSION_DRIVER=${SESSION_DRIVER:-database}' >> /entrypoint.sh && \
+    echo 'QUEUE_CONNECTION=${QUEUE_CONNECTION:-sync}' >> /entrypoint.sh && \
+    echo 'DB_CONNECTION=${DB_CONNECTION:-pgsql}' >> /entrypoint.sh && \
+    echo 'DB_HOST=${DB_HOST}' >> /entrypoint.sh && \
+    echo 'DB_PORT=${DB_PORT:-5432}' >> /entrypoint.sh && \
+    echo 'DB_DATABASE=${DB_DATABASE}' >> /entrypoint.sh && \
+    echo 'DB_USERNAME=${DB_USERNAME}' >> /entrypoint.sh && \
+    echo 'DB_PASSWORD=${DB_PASSWORD}' >> /entrypoint.sh && \
+    echo 'MAIL_MAILER=${MAIL_MAILER:-log}' >> /entrypoint.sh && \
+    echo 'EOF' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Ensure .env exists' >> /entrypoint.sh && \
-    echo 'if [ ! -f .env ]; then cp .env.example .env; fi' >> /entrypoint.sh && \
+    echo 'echo "Environment configured:"' >> /entrypoint.sh && \
+    echo 'echo "  APP_ENV: $APP_ENV"' >> /entrypoint.sh && \
+    echo 'echo "  APP_URL: $APP_URL"' >> /entrypoint.sh && \
+    echo 'echo "  DB_HOST: $DB_HOST"' >> /entrypoint.sh && \
+    echo 'echo "  DB_DATABASE: $DB_DATABASE"' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Smart cache clearing - only if needed' >> /entrypoint.sh && \
-    echo 'if [ ! -f bootstrap/cache/config.php ]; then' >> /entrypoint.sh && \
-    echo '  echo "Clearing cache directories..."' >> /entrypoint.sh && \
-    echo '  rm -rf bootstrap/cache/*.php 2>/dev/null || true' >> /entrypoint.sh && \
-    echo '  rm -rf storage/framework/cache/data/* 2>/dev/null || true' >> /entrypoint.sh && \
-    echo 'fi' >> /entrypoint.sh && \
-    echo '' >> /entrypoint.sh && \
-    echo '# Generate app key if APP_KEY is empty' >> /entrypoint.sh && \
+    echo '# Generate app key if not provided' >> /entrypoint.sh && \
     echo 'if [ -z "$APP_KEY" ]; then' >> /entrypoint.sh && \
     echo '  echo "Generating APP_KEY..."' >> /entrypoint.sh && \
     echo '  php artisan key:generate --force' >> /entrypoint.sh && \
-    echo 'else' >> /entrypoint.sh && \
-    echo '  echo "APP_KEY already set"' >> /entrypoint.sh && \
     echo 'fi' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo '# Cache configuration' >> /entrypoint.sh && \
     echo 'echo "Caching configuration..."' >> /entrypoint.sh && \
+    echo 'rm -rf bootstrap/cache/*.php 2>/dev/null || true' >> /entrypoint.sh && \
     echo 'php artisan config:cache' >> /entrypoint.sh && \
     echo 'php artisan route:cache' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
