@@ -16,7 +16,7 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap">
 
         <!-- Styles -->
-        <link rel="stylesheet" href="{{ asset_https('css/app.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 
       <!--Bootstrap-->
       <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
@@ -34,9 +34,9 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 
 <!-- Favicon -->
-<link href="{{asset_https('landing_page/img/apple-touch-icon.png')}}" rel="shortcut icon"/>
+<link href="{{asset('landing_page/img/apple-touch-icon.png')}}" rel="shortcut icon"/>
       <!-- Scripts -->
-        <script src="{{ asset_https('js/app.js') }}" defer></script>
+        <script src="{{ asset('js/app.js') }}" defer></script>
     </head>
     <body>
     @include('sweetalert::alert')
