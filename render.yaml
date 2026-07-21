@@ -34,7 +34,7 @@ services:
         value: pgsql
       - key: DB_HOST
         fromDatabase:
-          name: growfunder-db
+          name: grofunder1_db
           property: host
       - key: DB_PORT
         value: "5432"
@@ -42,17 +42,17 @@ services:
         value: growfunder
       - key: DB_USERNAME
         fromDatabase:
-          name: growfunder-db
+          name: grofunder1_db
           property: user
       - key: DB_PASSWORD
         fromDatabase:
-          name: growfunder-db
+          name: grofunder1_db
           property: password
       - key: MAIL_MAILER
         value: log
 
 databases:
-  - name: growfunder-db
+  - name: grofunder1_db
     databaseName: growfunder
     user: postgres
     plan: free
