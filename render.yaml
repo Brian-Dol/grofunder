@@ -2,9 +2,9 @@ services:
   - type: web
     name: growfunder
     plan: free
-    runtime: docker
-    # Docker runtime - Dockerfile and entrypoint.sh handle everything
-    # Environment variables set here will be available in container
+    runtime: php
+    buildCommand: ./build.sh
+    startCommand: vendor/bin/heroku-php-apache2 public/
     envVars:
       - key: APP_NAME
         value: Growfunder
