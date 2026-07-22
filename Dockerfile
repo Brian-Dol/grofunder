@@ -108,9 +108,8 @@ RUN echo '#!/bin/bash' > /entrypoint.sh && \
     echo 'php artisan config:cache' >> /entrypoint.sh && \
     echo 'php artisan route:cache' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Run migrations if database is available' >> /entrypoint.sh && \
-    echo 'echo "Running migrations..."' >> /entrypoint.sh && \
-    echo 'php artisan migrate --force 2>&1 || echo "Migration warning - check logs"' >> /entrypoint.sh && \
+    echo '# Migrations disabled to prevent memory exhaustion on free tier' >> /entrypoint.sh && \
+    echo '# Run manually: php artisan migrate --force' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo 'echo "=== Starting Apache ===" ' >> /entrypoint.sh && \
     echo 'exec apache2-foreground' >> /entrypoint.sh && \
