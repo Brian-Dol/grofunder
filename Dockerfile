@@ -16,8 +16,10 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure intl \
     && docker-php-ext-install pdo pdo_pgsql intl gd exif zip
 
-# Enable Apache modules
-RUN a2dismod mpm_event && a2enmod mpm_prefork rewrite headers
+# Fix Apache MPM conflict - remove all MPM modules and enable only prefork
+RUN rm -f /etc/apache2/mods-enabled/mpm_*.load && \
+    rm -f /etc/apache2/mods-enabled/mpm_*.conf && \
+    a2enmod mpm_prefork rewrite headers
 
 # Install Node.js and npm
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && apt-get install -y nodejs
