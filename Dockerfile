@@ -114,14 +114,6 @@ RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo 'echo "=== Starting nginx + php-fpm ===" ' >> /entrypoint.sh && \
     echo 'php-fpm -D' >> /entrypoint.sh && \
-    echo 'sleep 2' >> /entrypoint.sh && \
-    echo 'if ! pgrep -x php-fpm > /dev/null; then' >> /entrypoint.sh && \
-    echo '  echo "ERROR: php-fpm failed to start!"' >> /entrypoint.sh && \
-    echo '  exit 1' >> /entrypoint.sh && \
-    echo 'fi' >> /entrypoint.sh && \
-    echo 'nginx -t' >> /entrypoint.sh && \
-    echo 'echo "nginx configuration test passed"' >> /entrypoint.sh && \
-    echo 'echo "nginx is about to start..."' >> /entrypoint.sh && \
     echo 'exec nginx -g "daemon off;"' >> /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
