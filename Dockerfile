@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo pdo_pgsql intl gd exif zip
 
 # Enable Apache modules
-RUN a2enmod rewrite headers
+RUN a2dismod mpm_event && a2enmod mpm_prefork rewrite headers
 
 # Install Node.js and npm
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && apt-get install -y nodejs
@@ -48,19 +48,9 @@ RUN chown -R www-data:www-data storage bootstrap/cache && chmod -R 755 storage b
 # Configure Apache to serve from /public
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
 
-# Add virtual host configuration with HTTPS detection
-RUN echo '<VirtualHost *:80>' > /etc/apache2/sites-available/000-default.conf && \
-    echo '    ServerName localhost' >> /etc/apache2/sites-available/000-default.conf && \
-    echo '    DocumentRoot /var/www/html/public' >> /etc/apache2/sites-available/000-default.conf && \
-    echo '    <Directory /var/www/html/public>' >> /etc/apache2/sites-available/000-default.conf && \
-    echo '        Options Indexes FollowSymLinks' >> /etc/apache2/sites-available/000-default.conf && \
-    echo '        AllowOverride All' >> /etc/apache2/sites-available/000-default.conf && \
-    echo '        Require all granted' >> /etc/apache2/sites-available/000-default.conf && \
-    echo '    </Directory>' >> /etc/apache2/sites-available/000-default.conf && \
-    echo '    # Trust X-Forwarded-Proto from reverse proxy' >> /etc/apache2/sites-available/000-default.conf && \
-    echo '    SetEnvIf X-Forwarded-Proto https HTTPS=on' >> /etc/apache2/sites-available/000-default.conf && \
-    echo '    SetEnvIf X-Forwarded-Proto https REQUEST_SCHEME=https' >> /etc/apache2/sites-available/000-default.conf && \
-    echo '</VirtualHost>' >> /etc/apache2/sites-available/000-default.conf
+# Set X-Forwarded-Proto headers for reverse proxy
+RUN echo 'SetEnvIf X-Forwarded-Proto https HTTPS=on' >> /etc/apache2/apache2.conf && \
+    echo 'SetEnvIf X-Forwarded-Proto https REQUEST_SCHEME=https' >> /etc/apache2/apache2.conf
 
 # Ensure environment variables are set for Apache/PHP
 RUN echo '#!/bin/bash' > /entrypoint.sh && \
