@@ -94,7 +94,7 @@ RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo '        try_files \$uri \$uri/ /index.php?\$query_string;' >> /entrypoint.sh && \
     echo '    }' >> /entrypoint.sh && \
     echo '    location ~ \.php\$ {' >> /entrypoint.sh && \
-    echo '        fastcgi_pass 127.0.0.1:9000;' >> /entrypoint.sh && \
+    echo '        fastcgi_pass unix:/var/run/php-fpm.sock;' >> /entrypoint.sh && \
     echo '        fastcgi_index index.php;' >> /entrypoint.sh && \
     echo '        include fastcgi_params;' >> /entrypoint.sh && \
     echo '        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;' >> /entrypoint.sh && \
@@ -114,6 +114,14 @@ RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo 'echo "=== Starting nginx + php-fpm ===" ' >> /entrypoint.sh && \
     echo 'php-fpm -D' >> /entrypoint.sh && \
+    echo 'sleep 2' >> /entrypoint.sh && \
+    echo 'if ! pgrep -x php-fpm > /dev/null; then' >> /entrypoint.sh && \
+    echo '  echo "ERROR: php-fpm failed to start!"' >> /entrypoint.sh && \
+    echo '  exit 1' >> /entrypoint.sh && \
+    echo 'fi' >> /entrypoint.sh && \
+    echo 'nginx -t' >> /entrypoint.sh && \
+    echo 'echo "nginx configuration test passed"' >> /entrypoint.sh && \
+    echo 'echo "nginx is about to start..."' >> /entrypoint.sh && \
     echo 'exec nginx -g "daemon off;"' >> /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
