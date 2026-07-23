@@ -45,27 +45,8 @@ RUN rm -rf storage/framework/views/* 2>/dev/null || true
 # Set permissions
 RUN chown -R nobody:nobody storage bootstrap/cache && chmod -R 755 storage bootstrap/cache
 
-# Configure nginx
-RUN mkdir -p /etc/nginx/sites-available && \
-    echo 'server {' > /etc/nginx/sites-available/default && \
-    echo '    listen 80;' >> /etc/nginx/sites-available/default && \
-    echo '    server_name _;' >> /etc/nginx/sites-available/default && \
-    echo '    root /var/www/html/public;' >> /etc/nginx/sites-available/default && \
-    echo '    index index.php;' >> /etc/nginx/sites-available/default && \
-    echo '    location / {' >> /etc/nginx/sites-available/default && \
-    echo '        try_files $uri $uri/ /index.php?$query_string;' >> /etc/nginx/sites-available/default && \
-    echo '    }' >> /etc/nginx/sites-available/default && \
-    echo '    location ~ \.php$ {' >> /etc/nginx/sites-available/default && \
-    echo '        fastcgi_pass 127.0.0.1:9000;' >> /etc/nginx/sites-available/default && \
-    echo '        fastcgi_index index.php;' >> /etc/nginx/sites-available/default && \
-    echo '        include fastcgi_params;' >> /etc/nginx/sites-available/default && \
-    echo '        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;' >> /etc/nginx/sites-available/default && \
-    echo '        set_real_ip_from 0.0.0.0/0;' >> /etc/nginx/sites-available/default && \
-    echo '        real_ip_header X-Forwarded-For;' >> /etc/nginx/sites-available/default && \
-    echo '    }' >> /etc/nginx/sites-available/default && \
-    echo '}' >> /etc/nginx/sites-available/default && \
-    mkdir -p /etc/nginx/sites-enabled && \
-    ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+# Prepare nginx sites directory
+RUN mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
 
 # Create startup script
 RUN echo '#!/bin/sh' > /entrypoint.sh && \
@@ -100,6 +81,30 @@ RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo 'echo "  APP_URL: $APP_URL"' >> /entrypoint.sh && \
     echo 'echo "  DB_HOST: $DB_HOST"' >> /entrypoint.sh && \
     echo 'echo "  DB_DATABASE: $DB_DATABASE"' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Generate nginx config with PORT variable' >> /entrypoint.sh && \
+    echo 'PORT=${PORT:-80}' >> /entrypoint.sh && \
+    echo 'cat > /etc/nginx/sites-available/default << EOF' >> /entrypoint.sh && \
+    echo 'server {' >> /entrypoint.sh && \
+    echo '    listen 0.0.0.0:\$PORT;' >> /entrypoint.sh && \
+    echo '    server_name _;' >> /entrypoint.sh && \
+    echo '    root /var/www/html/public;' >> /entrypoint.sh && \
+    echo '    index index.php;' >> /entrypoint.sh && \
+    echo '    location / {' >> /entrypoint.sh && \
+    echo '        try_files \$uri \$uri/ /index.php?\$query_string;' >> /entrypoint.sh && \
+    echo '    }' >> /entrypoint.sh && \
+    echo '    location ~ \.php\$ {' >> /entrypoint.sh && \
+    echo '        fastcgi_pass 127.0.0.1:9000;' >> /entrypoint.sh && \
+    echo '        fastcgi_index index.php;' >> /entrypoint.sh && \
+    echo '        include fastcgi_params;' >> /entrypoint.sh && \
+    echo '        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;' >> /entrypoint.sh && \
+    echo '        set_real_ip_from 0.0.0.0/0;' >> /entrypoint.sh && \
+    echo '        real_ip_header X-Forwarded-For;' >> /entrypoint.sh && \
+    echo '    }' >> /entrypoint.sh && \
+    echo '}' >> /entrypoint.sh && \
+    echo 'EOF' >> /entrypoint.sh && \
+    echo 'ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default' >> /entrypoint.sh && \
+    echo 'echo "nginx configured to listen on 0.0.0.0:$PORT"' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo '# Cache configuration' >> /entrypoint.sh && \
     echo 'echo "Caching configuration..."' >> /entrypoint.sh && \
