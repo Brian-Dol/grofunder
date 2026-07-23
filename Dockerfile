@@ -1,28 +1,26 @@
-# Use PHP 8.3 with Apache - Clean, simplified Dockerfile
-FROM php:8.3-apache
+# Use PHP 8.3 FPM with nginx - Clean, modern approach
+FROM php:8.3-fpm-alpine
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install system dependencies (Alpine Linux)
+RUN apk add --no-cache \
+    nginx \
+    postgresql-client \
     libpq-dev \
     libzip-dev \
     unzip \
     git \
     curl \
-    libicu-dev \
+    icu-dev \
     libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-configure intl \
-    && docker-php-ext-install pdo pdo_pgsql intl gd exif zip
+    libjpeg-turbo-dev \
+    freetype-dev \
+    nodejs \
+    npm
 
-# Fix Apache MPM conflict - remove all MPM modules and enable only prefork
-RUN rm -f /etc/apache2/mods-enabled/mpm_*.load && \
-    rm -f /etc/apache2/mods-enabled/mpm_*.conf && \
-    a2enmod mpm_prefork rewrite headers
-
-# Install Node.js and npm
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && apt-get install -y nodejs
+# Install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-configure intl && \
+    docker-php-ext-install pdo pdo_pgsql intl gd exif zip
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -45,17 +43,32 @@ RUN rm -rf storage/framework/cache/* 2>/dev/null || true
 RUN rm -rf storage/framework/views/* 2>/dev/null || true
 
 # Set permissions
-RUN chown -R www-data:www-data storage bootstrap/cache && chmod -R 755 storage bootstrap/cache
+RUN chown -R nobody:nobody storage bootstrap/cache && chmod -R 755 storage bootstrap/cache
 
-# Configure Apache to serve from /public
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
+# Configure nginx
+RUN mkdir -p /etc/nginx/sites-available && \
+    echo 'server {' > /etc/nginx/sites-available/default && \
+    echo '    listen 80;' >> /etc/nginx/sites-available/default && \
+    echo '    server_name _;' >> /etc/nginx/sites-available/default && \
+    echo '    root /var/www/html/public;' >> /etc/nginx/sites-available/default && \
+    echo '    index index.php;' >> /etc/nginx/sites-available/default && \
+    echo '    location / {' >> /etc/nginx/sites-available/default && \
+    echo '        try_files $uri $uri/ /index.php?$query_string;' >> /etc/nginx/sites-available/default && \
+    echo '    }' >> /etc/nginx/sites-available/default && \
+    echo '    location ~ \.php$ {' >> /etc/nginx/sites-available/default && \
+    echo '        fastcgi_pass 127.0.0.1:9000;' >> /etc/nginx/sites-available/default && \
+    echo '        fastcgi_index index.php;' >> /etc/nginx/sites-available/default && \
+    echo '        include fastcgi_params;' >> /etc/nginx/sites-available/default && \
+    echo '        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;' >> /etc/nginx/sites-available/default && \
+    echo '        set_real_ip_from 0.0.0.0/0;' >> /etc/nginx/sites-available/default && \
+    echo '        real_ip_header X-Forwarded-For;' >> /etc/nginx/sites-available/default && \
+    echo '    }' >> /etc/nginx/sites-available/default && \
+    echo '}' >> /etc/nginx/sites-available/default && \
+    mkdir -p /etc/nginx/sites-enabled && \
+    ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
-# Set X-Forwarded-Proto headers for reverse proxy
-RUN echo 'SetEnvIf X-Forwarded-Proto https HTTPS=on' >> /etc/apache2/apache2.conf && \
-    echo 'SetEnvIf X-Forwarded-Proto https REQUEST_SCHEME=https' >> /etc/apache2/apache2.conf
-
-# Ensure environment variables are set for Apache/PHP
-RUN echo '#!/bin/bash' > /entrypoint.sh && \
+# Create startup script
+RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo 'set -e' >> /entrypoint.sh && \
     echo 'echo "=== Growfunder Startup ===" ' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
@@ -88,26 +101,18 @@ RUN echo '#!/bin/bash' > /entrypoint.sh && \
     echo 'echo "  DB_HOST: $DB_HOST"' >> /entrypoint.sh && \
     echo 'echo "  DB_DATABASE: $DB_DATABASE"' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Generate app key if not provided' >> /entrypoint.sh && \
-    echo 'if [ -z "$APP_KEY" ]; then' >> /entrypoint.sh && \
-    echo '  echo "Generating APP_KEY..."' >> /entrypoint.sh && \
-    echo '  php artisan key:generate --force' >> /entrypoint.sh && \
-    echo 'fi' >> /entrypoint.sh && \
-    echo '' >> /entrypoint.sh && \
     echo '# Cache configuration' >> /entrypoint.sh && \
     echo 'echo "Caching configuration..."' >> /entrypoint.sh && \
     echo 'rm -rf bootstrap/cache/*.php 2>/dev/null || true' >> /entrypoint.sh && \
     echo 'php artisan config:cache' >> /entrypoint.sh && \
     echo 'php artisan route:cache' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Migrations disabled to prevent memory exhaustion on free tier' >> /entrypoint.sh && \
-    echo '# Run manually: php artisan migrate --force' >> /entrypoint.sh && \
-    echo '' >> /entrypoint.sh && \
-    echo 'echo "=== Starting Apache ===" ' >> /entrypoint.sh && \
-    echo 'exec apache2-foreground' >> /entrypoint.sh && \
+    echo 'echo "=== Starting nginx + php-fpm ===" ' >> /entrypoint.sh && \
+    echo 'nginx' >> /entrypoint.sh && \
+    echo 'exec php-fpm' >> /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
 CMD ["/entrypoint.sh"]
 
-EXPOSE 80
+EXPOSE 80 9000
 
