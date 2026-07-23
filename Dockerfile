@@ -108,8 +108,8 @@ RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo 'php artisan route:cache' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo 'echo "=== Starting nginx + php-fpm ===" ' >> /entrypoint.sh && \
-    echo 'nginx' >> /entrypoint.sh && \
-    echo 'exec php-fpm' >> /entrypoint.sh && \
+    echo 'php-fpm -D' >> /entrypoint.sh && \
+    echo 'exec nginx -g "daemon off;"' >> /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
 CMD ["/entrypoint.sh"]
