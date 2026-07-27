@@ -66,11 +66,11 @@ RUN cat > /etc/apache2/sites-available/000-default.conf << 'EOF'
 </VirtualHost>
 EOF
 
-# Startup script to create .env
+# Startup script to create .env and run migrations
 RUN cat > /startup.sh << 'EOFSTART'
 #!/bin/bash
 
-# Create .env if it doesn't exist
+# Create .env if it doesn't exist (will be overridden by Railway env vars)
 if [ ! -f /var/www/html/.env ]; then
     cat > /var/www/html/.env << 'EOF'
 APP_NAME=Growfunder
@@ -79,11 +79,7 @@ APP_DEBUG=false
 APP_KEY=base64:tE6w4W4Y+nhteXfQVPCAHKzOnKiUqJqbb2jQ9LTHrKA=
 APP_URL=https://web-production-848ef.up.railway.app
 DB_CONNECTION=pgsql
-DB_HOST=postgres.railway.internal
 DB_PORT=5432
-DB_DATABASE=railway
-DB_USERNAME=postgres
-DB_PASSWORD=QQMChGefegtixvAHbSsUiJjnbkuEPGKm
 SESSION_DRIVER=file
 CACHE_DRIVER=file
 QUEUE_CONNECTION=sync
@@ -92,6 +88,17 @@ LOG_CHANNEL=stderr
 EOF
     echo "[STARTUP] Created .env file"
 fi
+
+# Run database migrations and seed admin user
+echo "[STARTUP] Running database migrations..."
+php artisan migrate --force || echo "[WARNING] Migrations may have already run"
+
+echo "[STARTUP] Seeding admin user..."
+php artisan db:seed --class=CreateAdminSeeder --force || echo "[WARNING] Admin seeder may have already run"
+
+# Clear caches for fresh start
+php artisan cache:clear || true
+php artisan config:clear || true
 
 # Start Apache
 exec apache2-foreground
