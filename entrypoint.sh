@@ -37,33 +37,56 @@ echo ""
 # Get PORT from environment or default to 80
 PORT=${PORT:-80}
 
-# Generate nginx configuration with actual PORT value
-cat > /etc/nginx/sites-available/default << EOF
-server {
-    listen 0.0.0.0:$PORT;
-    server_name _;
-    root /var/www/html/public;
-    index index.php;
+# Generate main nginx configuration with actual PORT value
+# Note: Alpine nginx uses /etc/nginx/nginx.conf by default
+mkdir -p /var/log/nginx
 
-    error_log /var/log/nginx/error.log warn;
-    access_log /var/log/nginx/access.log;
+cat > /etc/nginx/nginx.conf << EOF
+user nobody;
+worker_processes auto;
+error_log /var/log/nginx/error.log warn;
+pid /var/run/nginx.pid;
 
-    location / {
-        try_files \$uri \$uri/ /index.php?\$query_string;
-    }
+events {
+    worker_connections 1024;
+}
 
-    location ~ \.php\$ {
-        fastcgi_pass 127.0.0.1:9000;
-        fastcgi_index index.php;
-        include fastcgi_params;
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        fastcgi_param HTTP_PROXY "";
-        fastcgi_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        fastcgi_set_header X-Forwarded-Proto \$scheme;
-    }
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    
+    log_format main '\$remote_addr - \$remote_user [\$time_local] "\$request" '
+                    '\$status \$body_bytes_sent "\$http_referer" '
+                    '"\$http_user_agent" "\$http_x_forwarded_for"';
+    
+    access_log /var/log/nginx/access.log main;
+    sendfile on;
+    keepalive_timeout 65;
+    
+    server {
+        listen 0.0.0.0:$PORT default_server;
+        server_name _;
+        root /var/www/html/public;
+        index index.php;
 
-    location ~ /\. {
-        deny all;
+        location / {
+            try_files \$uri \$uri/ /index.php?\$query_string;
+        }
+
+        location ~ \.php\$ {
+            fastcgi_pass 127.0.0.1:9000;
+            fastcgi_index index.php;
+            include fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+            fastcgi_param HTTP_PROXY "";
+            fastcgi_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+            fastcgi_set_header X-Forwarded-Proto \$scheme;
+            fastcgi_set_header X-Forwarded-Host \$server_name;
+        }
+
+        location ~ /\. {
+            deny all;
+        }
     }
 }
 EOF
