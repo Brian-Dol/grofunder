@@ -90,6 +90,8 @@ RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo '    server_name _;' >> /entrypoint.sh && \
     echo '    root /var/www/html/public;' >> /entrypoint.sh && \
     echo '    index index.php;' >> /entrypoint.sh && \
+    echo '    error_log /var/log/nginx/error.log warn;' >> /entrypoint.sh && \
+    echo '    access_log /var/log/nginx/access.log;' >> /entrypoint.sh && \
     echo '    location / {' >> /entrypoint.sh && \
     echo '        try_files \$uri \$uri/ /index.php?\$query_string;' >> /entrypoint.sh && \
     echo '    }' >> /entrypoint.sh && \
@@ -105,6 +107,8 @@ RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo 'EOF' >> /entrypoint.sh && \
     echo 'ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default' >> /entrypoint.sh && \
     echo 'echo "nginx configured to listen on 0.0.0.0:$PORT"' >> /entrypoint.sh && \
+    echo 'echo "Validating nginx config..." ' >> /entrypoint.sh && \
+    echo 'nginx -t 2>&1 || { echo "nginx config validation failed!"; exit 1; }' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo '# Cache configuration' >> /entrypoint.sh && \
     echo 'echo "Caching configuration..."' >> /entrypoint.sh && \
@@ -113,7 +117,12 @@ RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo 'php artisan route:cache' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo 'echo "=== Starting nginx + php-fpm ===" ' >> /entrypoint.sh && \
+    echo 'echo "Starting php-fpm in background..." ' >> /entrypoint.sh && \
     echo 'php-fpm -D' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Wait for php-fpm to start listening on TCP socket' >> /entrypoint.sh && \
+    echo 'sleep 3' >> /entrypoint.sh && \
+    echo 'echo "Starting nginx..." ' >> /entrypoint.sh && \
     echo 'exec nginx -g "daemon off;"' >> /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
