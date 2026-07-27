@@ -47,12 +47,12 @@ echo "[STARTUP] Starting PHP development server"
 echo "[STARTUP] Listening on 0.0.0.0:$PORT"
 echo "[STARTUP] Document root: /app/public"
 
-# Start PHP development server
-exec php -S 0.0.0.0:$PORT -t /app/public -d display_errors=1
+# Start PHP development server with Laravel router
+exec php -S 0.0.0.0:$PORT -t /app/public /app/public/index.php
 EOFSTART
 
-chmod +x /start.sh
+RUN chmod +x /start.sh
 
 EXPOSE 8000
-CMD sh -c 'php -S 0.0.0.0:${PORT:-8000} -t /app/public'
+CMD ["sh", "/start.sh"]
 
