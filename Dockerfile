@@ -1,5 +1,5 @@
-# Minimal Laravel Docker - use built-in PHP server
-FROM php:8.3-fpm-alpine
+# Ultra-minimal Laravel Docker
+FROM php:8.3-cli-alpine
 
 RUN apk add --no-cache git curl npm nodejs postgresql-client libpq-dev
 
@@ -11,14 +11,15 @@ WORKDIR /app
 
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs && npm install && npm run build
+RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs && \
+    npm install && npm run build
 
-RUN cat > /start.sh << 'STARTEOF'
+RUN cat > /start.sh << 'EOFSTART'
 #!/bin/sh
 set -e
 
-echo "Creating .env..."
-cat > .env << 'ENVEOF'
+# Create .env
+cat > .env << 'EOF'
 APP_NAME=Growfunder
 APP_ENV=production
 APP_DEBUG=true
@@ -35,16 +36,17 @@ CACHE_DRIVER=file
 QUEUE_CONNECTION=sync
 TRUSTED_PROXIES=*
 LOG_CHANNEL=stderr
-ENVEOF
+EOF
 
-echo "Caching Laravel config..."
+echo "Config caching..."
 php artisan config:cache
 php artisan route:cache
 
+echo "Starting app..."
 PORT=${PORT:-8000}
-echo "Starting Laravel on 0.0.0.0:$PORT..."
-php artisan serve --host=0.0.0.0 --port=$PORT
-STARTEOF
+cd /app/public
+exec php -S 0.0.0.0:$PORT index.php
+EOFSTART
 
 chmod +x /start.sh
 
