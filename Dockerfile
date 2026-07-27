@@ -15,21 +15,25 @@ RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs && np
 
 RUN cat > /entrypoint.sh << 'EOFSCRIPT'
 #!/bin/sh
-set -e
+set -ex
 
-echo "[$(date)] Creating .env..."
-cat > .env << ENVEOF
+echo "=== GROWFUNDER STARTUP ==="
+pwd
+whoami
+
+# Hardcode .env - no environment variable dependencies
+cat > .env << 'ENVEOF'
 APP_NAME=Growfunder
 APP_ENV=production
 APP_DEBUG=true
-APP_KEY=${APP_KEY:-base64:tE6w4W4Y+nhteXfQVPCAHKzOnCiUqJqbb2jQ9LTHrKA=}
+APP_KEY=base64:tE6w4W4Y+nhteXfQVPCAHKzOnKiUqJqbb2jQ9LTHrKA=
 APP_URL=https://web-production-848ef.up.railway.app
 DB_CONNECTION=pgsql
-DB_HOST=${DB_HOST:-postgres.railway.internal}
+DB_HOST=postgres.railway.internal
 DB_PORT=5432
-DB_DATABASE=${DB_DATABASE:-railway}
-DB_USERNAME=${DB_USERNAME:-postgres}
-DB_PASSWORD=${DB_PASSWORD}
+DB_DATABASE=railway
+DB_USERNAME=postgres
+DB_PASSWORD=QQMChGefegtixvAHbSsUiJjnbkuEPGKm
 SESSION_DRIVER=database
 CACHE_DRIVER=file
 QUEUE_CONNECTION=sync
@@ -37,13 +41,14 @@ TRUSTED_PROXIES=*
 LOG_CHANNEL=stderr
 ENVEOF
 
-echo "[$(date)] Caching configuration..."
-php artisan config:cache
-php artisan route:cache
+echo "env file created"
+
+php artisan config:cache || echo "config:cache failed but continuing"
+php artisan route:cache || echo "route:cache failed but continuing"
 
 PORT=${PORT:-8000}
-echo "[$(date)] Starting Laravel on 0.0.0.0:$PORT..."
-php artisan serve --host=0.0.0.0 --port=$PORT
+echo "Listening on port: $PORT"
+exec php artisan serve --host=0.0.0.0 --port=$PORT
 EOFSCRIPT
 
 chmod +x /entrypoint.sh
