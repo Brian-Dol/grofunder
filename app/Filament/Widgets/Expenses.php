@@ -10,6 +10,7 @@ use Carbon\CarbonImmutable;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 
 
@@ -41,7 +42,7 @@ class Expenses extends LineChartWidget
             ->when($startDate, fn(Builder $query) => $query->whereDate('created_at', '>=', $startDate))
             ->when($endDate, fn(Builder $query) => $query->whereDate('created_at', '<=', $endDate))
             ->whereMonth('created_at', $month)
-            ->sum('expense_amount');
+            ->sum(DB::raw('CAST(expense_amount AS DECIMAL)'));
     }
 
     // Multiply each value in $records by -1
