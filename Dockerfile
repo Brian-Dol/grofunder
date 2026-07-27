@@ -94,7 +94,7 @@ RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo '        try_files \$uri \$uri/ /index.php?\$query_string;' >> /entrypoint.sh && \
     echo '    }' >> /entrypoint.sh && \
     echo '    location ~ \.php\$ {' >> /entrypoint.sh && \
-    echo '        fastcgi_pass unix:/var/run/php-fpm.sock;' >> /entrypoint.sh && \
+    echo '        fastcgi_pass 127.0.0.1:9000;' >> /entrypoint.sh && \
     echo '        fastcgi_index index.php;' >> /entrypoint.sh && \
     echo '        include fastcgi_params;' >> /entrypoint.sh && \
     echo '        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;' >> /entrypoint.sh && \
