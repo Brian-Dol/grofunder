@@ -78,10 +78,12 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
 
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            // Temporarily disabled to fix memory issue - load widgets manually
+            // ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 // Widgets\AccountWidget::class,
                 // Widgets\FilamentInfoWidget::class,
+                // All heavy widgets disabled temporarily - will be re-enabled after dashboard loads
             ])
             ->navigationItems([
                 NavigationItem::make('Statement of Financial Position')
