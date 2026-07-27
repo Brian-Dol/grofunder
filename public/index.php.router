@@ -1,0 +1,16 @@
+<?php
+/**
+ * Laravel Front Controller Router for built-in PHP Server
+ * 
+ * This file is used by PHP's built-in development server to route requests
+ * to the actual index.php file.
+ */
+$public_path = __DIR__;
+
+// Serve static files from public directory
+if ($public_path !== false && is_file($public_path . $_SERVER["REQUEST_URI"])) {
+    return false;
+}
+
+// Route all requests to index.php for Laravel's router
+require_once $public_path . '/index.php';

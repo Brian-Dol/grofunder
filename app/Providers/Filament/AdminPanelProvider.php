@@ -52,10 +52,11 @@ class AdminPanelProvider extends PanelProvider
                         'default' => 1,
                         'sm' => 2,
                     ]),
-                ActivitylogPlugin::make()
-                    ->authorize(
-                        fn() => auth()->user()->hasRole('super_admin')
-                    ),
+                // Temporarily disabled to reduce memory footprint
+                // ActivitylogPlugin::make()
+                //     ->authorize(
+                //         fn() => auth()->user()->hasRole('super_admin')
+                //     ),
             ])
             // ->brandLogo(asset('Logos/logo2.png'))
             // ->brandLogoHeight('4rem')
@@ -137,8 +138,9 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                CheckProfileCompleteness::class,
-                CheckSubscriptionValidity::class
+                // Temporarily disabled to reduce memory footprint
+                // CheckProfileCompleteness::class,
+                // CheckSubscriptionValidity::class
             ])
             ->authMiddleware([
                 Authenticate::class,

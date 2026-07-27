@@ -99,7 +99,7 @@ class Dashboard extends BaseDashboard
 
     public function getTitle(): string | Htmlable
     {
-        $branchName = Branches::find(auth()->user()->branch_id)->branch_name ?? 'Main Branch';
-        return strtoupper($branchName);
+        // Simplified title to reduce queries
+        return 'Dashboard';
     }
 }

@@ -1,0 +1,105 @@
+# Minimal working Dockerfile for testing
+FROM php:8.3-fpm-alpine
+
+# Install essential packages
+RUN apk add --no-cache \
+    nginx \
+    postgresql-client \
+    libpq-dev \
+    git \
+    curl \
+    npm \
+    nodejs
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo pdo_pgsql
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+WORKDIR /app
+
+# Copy application
+COPY . .
+
+# Install dependencies  
+RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs 2>&1
+
+# Build assets
+RUN npm install && npm run build 2>&1
+
+# Create simple startup script
+RUN echo '#!/bin/sh\n\
+set -e\n\
+echo "Starting services..."\n\
+\n\
+# Create .env\n\
+cat > .env << EOF\n\
+APP_KEY=${APP_KEY}\n\
+APP_ENV=production\n\
+APP_DEBUG=false\n\
+APP_URL=${APP_URL}\n\
+DB_CONNECTION=pgsql\n\
+DB_HOST=${DB_HOST}\n\
+DB_PORT=5432\n\
+DB_DATABASE=${DB_DATABASE}\n\
+DB_USERNAME=${DB_USERNAME}\n\
+DB_PASSWORD=${DB_PASSWORD}\n\
+SESSION_DRIVER=database\n\
+CACHE_DRIVER=file\n\
+QUEUE_CONNECTION=sync\n\
+EOF\n\
+\n\
+echo "Caching config..."\n\
+php artisan config:cache\n\
+php artisan route:cache\n\
+\n\
+echo "Starting PHP-FPM..."\n\
+php-fpm -D\n\
+sleep 1\n\
+\n\
+echo "Starting nginx..."\n\
+exec nginx -g "daemon off;"\n\
+' > /entrypoint.sh && chmod +x /entrypoint.sh
+
+# Create minimal nginx config
+RUN mkdir -p /var/log/nginx && \
+    echo 'user nobody;\n\
+worker_processes auto;\n\
+error_log /var/log/nginx/error.log warn;\n\
+pid /var/run/nginx.pid;\n\
+\n\
+events { worker_connections 128; }\n\
+\n\
+http {\n\
+    include /etc/nginx/mime.types;\n\
+    default_type application/octet-stream;\n\
+    access_log /var/log/nginx/access.log;\n\
+    sendfile on;\n\
+    keepalive_timeout 65;\n\
+    \n\
+    server {\n\
+        listen 8080;\n\
+        server_name _;\n\
+        root /app/public;\n\
+        index index.php;\n\
+        \n\
+        location / {\n\
+            try_files $uri $uri/ /index.php?$query_string;\n\
+        }\n\
+        \n\
+        location ~ \\.php$ {\n\
+            fastcgi_pass 127.0.0.1:9000;\n\
+            fastcgi_index index.php;\n\
+            include fastcgi_params;\n\
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n\
+            fastcgi_param HTTP_X_FORWARDED_FOR $proxy_add_x_forwarded_for;\n\
+            fastcgi_param HTTP_X_FORWARDED_PROTO $scheme;\n\
+        }\n\
+    }\n\
+}\n\
+' > /etc/nginx/nginx.conf
+
+EXPOSE 8080
+
+ENTRYPOINT ["/entrypoint.sh"]
