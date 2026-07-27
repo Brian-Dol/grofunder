@@ -1,57 +1,22 @@
-# Use PHP 8.3 FPM with Alpine
+# PHP 8.3 FPM with nginx on Alpine
 FROM php:8.3-fpm-alpine
 
-# Install system dependencies
-RUN apk add --no-cache \
-    nginx \
-    postgresql-client \
-    libpq-dev \
-    libzip-dev \
-    unzip \
-    git \
-    curl \
-    icu-dev \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    nodejs \
-    npm \
-    supervisor
+RUN apk add --no-cache nginx postgresql-client libpq-dev git curl npm nodejs
 
-# Install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-configure intl && \
-    docker-php-ext-install pdo pdo_pgsql intl gd exif zip
+RUN docker-php-ext-install pdo pdo_pgsql
 
-# Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-WORKDIR /var/www/html
+WORKDIR /app
 
-# Copy project files
 COPY . .
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs && \
+    npm install && npm run build
 
-# Build frontend assets
-RUN npm install && npm run build
-
-# Clean up cache
-RUN rm -rf bootstrap/cache/*.php 2>/dev/null || true && \
-    rm -rf storage/framework/cache/* 2>/dev/null || true && \
-    rm -rf storage/framework/views/* 2>/dev/null || true
-
-# Set permissions
-RUN chown -R nobody:nobody storage bootstrap/cache && chmod -R 755 storage bootstrap/cache
-
-# Create nginx config file (will use PORT env variable at runtime)
-RUN mkdir -p /var/log/nginx /run/nginx
-
-# Create entrypoint script
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 EXPOSE 8080
-
 ENTRYPOINT ["/entrypoint.sh"]
+
