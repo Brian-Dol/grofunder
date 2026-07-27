@@ -38,12 +38,12 @@ class Dashboard extends BaseDashboard
     protected function getHeaderActions(): array
     {
         return [
-            FilterAction::make()
-                ->form([
-                    DatePicker::make('startDate'),
-                    DatePicker::make('endDate'),
-                    // ...
-                ]),
+            // FilterAction::make()
+            //     ->form([
+            //         DatePicker::make('startDate'),
+            //         DatePicker::make('endDate'),
+            //         // ...
+            //     ]),
         ];
     }
     public static function getNavigationIcon(): ?string
