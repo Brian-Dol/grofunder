@@ -13,15 +13,11 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs && npm install && npm run build
 
-RUN cat > /entrypoint.sh << 'EOFSCRIPT'
+RUN cat > /start.sh << 'STARTEOF'
 #!/bin/sh
-set -ex
+set -e
 
-echo "=== GROWFUNDER STARTUP ==="
-pwd
-whoami
-
-# Hardcode .env - no environment variable dependencies
+echo "Creating .env..."
 cat > .env << 'ENVEOF'
 APP_NAME=Growfunder
 APP_ENV=production
@@ -41,19 +37,17 @@ TRUSTED_PROXIES=*
 LOG_CHANNEL=stderr
 ENVEOF
 
-echo "env file created"
-
-php artisan config:cache || echo "config:cache failed but continuing"
-php artisan route:cache || echo "route:cache failed but continuing"
+echo "Caching Laravel config..."
+php artisan config:cache
+php artisan route:cache
 
 PORT=${PORT:-8000}
-echo "Listening on port: $PORT"
-exec php artisan serve --host=0.0.0.0 --port=$PORT
-EOFSCRIPT
+echo "Starting Laravel on 0.0.0.0:$PORT..."
+php artisan serve --host=0.0.0.0 --port=$PORT
+STARTEOF
 
-chmod +x /entrypoint.sh
+chmod +x /start.sh
 
 EXPOSE 8000
-ENTRYPOINT ["/entrypoint.sh"]
-
+CMD ["/start.sh"]
 
