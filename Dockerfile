@@ -16,7 +16,6 @@ RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs && \
 
 RUN cat > /start.sh << 'EOFSTART'
 #!/bin/sh
-set -e
 
 # Create .env
 cat > .env << 'EOF'
@@ -38,18 +37,20 @@ TRUSTED_PROXIES=*
 LOG_CHANNEL=stderr
 EOF
 
-echo "Config caching..."
-php artisan config:cache
-php artisan route:cache
+echo "[STARTUP] Config caching..."
+php artisan config:cache || echo "[WARN] config:cache failed but continuing"
+php artisan route:cache || echo "[WARN] route:cache failed but continuing"
 
-echo "Starting app..."
+# Get PORT from Railway environment or default to 8000
 PORT=${PORT:-8000}
-cd /app/public
-exec php -S 0.0.0.0:$PORT index.php
+echo "[STARTUP] Listening on 0.0.0.0:$PORT with docroot /app/public"
+
+# Replace shell with PHP server (this exec never returns)
+exec php -S 0.0.0.0:$PORT -t /app/public
 EOFSTART
 
 chmod +x /start.sh
 
 EXPOSE 8000
-CMD ["/start.sh"]
+CMD ["sh", "/start.sh"]
 
