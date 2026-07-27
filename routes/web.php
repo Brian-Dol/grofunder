@@ -28,6 +28,29 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Setup route for creating admin
+Route::post('/admin/setup/create-admin', function () {
+    $token = request('token');
+    if ($token !== env('SETUP_TOKEN', 'setup123')) {
+        return response()->json(['error' => 'Unauthorized'], 401);
+    }
+    
+    try {
+        \Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\CreateAdminSeeder']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Admin user created successfully',
+            'email' => 'admin@growfunder.local',
+            'password' => 'admin123'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
 // Diagnostic endpoint
 require __DIR__ . '/diagnostic.php';
 
