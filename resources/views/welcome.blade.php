@@ -7,10 +7,9 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Hind:wght@600&family=Open+Sans:wght@400;600&display=swap"
     rel="stylesheet" />
-  <!-- DEBUG: app.url={{ config('app.url') }} -->
-  <!-- DEBUG: app.asset_url={{ config('app.asset_url') }} -->
-  <!-- DEBUG: REQUEST_SCHEME={{ \Request::getScheme() }} -->
-  <!-- Using standard asset() function -->
+  <!-- Load Tailwind CSS via Vite -->
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
+  <!-- Fallback landing page styles -->
   <link href="{{ asset('landingPage/css/style.css') }}" rel="stylesheet" />
 
   <title>{{ config('app.name') }}</title>
