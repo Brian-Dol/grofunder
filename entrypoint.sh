@@ -1,11 +1,12 @@
 #!/bin/sh
-set -e
+set -ex
 
-echo "=== Growfunder Application Startup ==="
+echo "===== GROWFUNDER APPLICATION STARTUP ====="
 echo ""
 
-# Generate .env file from environment variables
-cat > .env << EOF
+# Create .env from environment variables
+echo "Generating .env file..."
+cat > .env << 'ENVEND'
 APP_NAME=${APP_NAME:-Growfunder}
 APP_ENV=${APP_ENV:-production}
 APP_DEBUG=${APP_DEBUG:-false}
@@ -25,73 +26,35 @@ DB_DATABASE=${DB_DATABASE}
 DB_USERNAME=${DB_USERNAME}
 DB_PASSWORD=${DB_PASSWORD}
 MAIL_MAILER=${MAIL_MAILER:-log}
-EOF
+ENVEND
 
-echo "✓ Environment configured"
-echo "  APP_ENV: $APP_ENV"
-echo "  APP_URL: $APP_URL"
-echo "  DB_HOST: $DB_HOST"
-echo "  DB_DATABASE: $DB_DATABASE"
+# Expand environment variables in .env
+sed -i "s|\${APP_NAME:-Growfunder}|${APP_NAME:-Growfunder}|g" .env
+sed -i "s|\${APP_ENV:-production}|${APP_ENV:-production}|g" .env
+sed -i "s|\${APP_DEBUG:-false}|${APP_DEBUG:-false}|g" .env
+sed -i "s|\${APP_KEY}|${APP_KEY}|g" .env
+sed -i "s|\${APP_URL}|${APP_URL}|g" .env
+sed -i "s|\${ASSET_URL}|${ASSET_URL}|g" .env
+sed -i "s|\${TRUSTED_PROXIES:-\*}|${TRUSTED_PROXIES:-*}|g" .env
+sed -i "s|\${LOG_CHANNEL:-stack}|${LOG_CHANNEL:-stack}|g" .env
+sed -i "s|\${LOG_LEVEL:-info}|${LOG_LEVEL:-info}|g" .env
+sed -i "s|\${CACHE_DRIVER:-file}|${CACHE_DRIVER:-file}|g" .env
+sed -i "s|\${SESSION_DRIVER:-database}|${SESSION_DRIVER:-database}|g" .env
+sed -i "s|\${QUEUE_CONNECTION:-sync}|${QUEUE_CONNECTION:-sync}|g" .env
+sed -i "s|\${DB_CONNECTION:-pgsql}|${DB_CONNECTION:-pgsql}|g" .env
+sed -i "s|\${DB_HOST}|${DB_HOST}|g" .env
+sed -i "s|\${DB_PORT:-5432}|${DB_PORT:-5432}|g" .env
+sed -i "s|\${DB_DATABASE}|${DB_DATABASE}|g" .env
+sed -i "s|\${DB_USERNAME}|${DB_USERNAME}|g" .env
+sed -i "s|\${DB_PASSWORD}|${DB_PASSWORD}|g" .env
+sed -i "s|\${MAIL_MAILER:-log}|${MAIL_MAILER:-log}|g" .env
+
+echo "✓ Environment file created"
 echo ""
 
-# Get PORT from environment or default to 80
-PORT=${PORT:-80}
-
-# Generate main nginx configuration with actual PORT value
-# Note: Alpine nginx uses /etc/nginx/nginx.conf by default
-mkdir -p /var/log/nginx
-
-cat > /etc/nginx/nginx.conf << EOF
-user nobody;
-worker_processes auto;
-error_log /var/log/nginx/error.log warn;
-pid /var/run/nginx.pid;
-
-events {
-    worker_connections 1024;
-}
-
-http {
-    include /etc/nginx/mime.types;
-    default_type application/octet-stream;
-    
-    log_format main '\$remote_addr - \$remote_user [\$time_local] "\$request" '
-                    '\$status \$body_bytes_sent "\$http_referer" '
-                    '"\$http_user_agent" "\$http_x_forwarded_for"';
-    
-    access_log /var/log/nginx/access.log main;
-    sendfile on;
-    keepalive_timeout 65;
-    
-    server {
-        listen 0.0.0.0:$PORT default_server;
-        server_name _;
-        root /var/www/html/public;
-        index index.php;
-
-        location / {
-            try_files \$uri \$uri/ /index.php?\$query_string;
-        }
-
-        location ~ \.php\$ {
-            fastcgi_pass 127.0.0.1:9000;
-            fastcgi_index index.php;
-            include fastcgi_params;
-            fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-            fastcgi_param HTTP_PROXY "";
-            fastcgi_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-            fastcgi_set_header X-Forwarded-Proto \$scheme;
-            fastcgi_set_header X-Forwarded-Host \$server_name;
-        }
-
-        location ~ /\. {
-            deny all;
-        }
-    }
-}
-EOF
-
-echo "✓ nginx configured to listen on 0.0.0.0:$PORT"
+# Get PORT from Railway or use 8080
+PORT=${PORT:-8080}
+echo "Listening on port: $PORT"
 echo ""
 
 # Cache Laravel configuration
@@ -101,19 +64,67 @@ php artisan route:cache
 echo "✓ Configuration cached"
 echo ""
 
-# Start PHP-FPM in the background
-echo "Starting PHP-FPM..."
+# Start PHP-FPM
+echo "Starting PHP-FPM daemon..."
 php-fpm -D
+sleep 1
 echo "✓ PHP-FPM started"
 echo ""
 
-# Give PHP-FPM time to open the socket
-sleep 2
+# Generate nginx.conf
+echo "Generating nginx configuration for port $PORT..."
+mkdir -p /var/log/nginx /run/nginx
 
-# Start nginx in the foreground (Docker will monitor this)
-echo "Starting nginx..."
-nginx -t 2>&1 || { echo "✗ nginx config validation failed!"; exit 1; }
-echo "✓ nginx started"
+cat > /etc/nginx/nginx.conf <<'NGINXEND'
+user nobody;
+worker_processes auto;
+error_log /var/log/nginx/error.log warn;
+pid /var/run/nginx.pid;
+
+events { worker_connections 512; }
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent"';
+    access_log /var/log/nginx/access.log main;
+    sendfile on;
+    keepalive_timeout 65;
+
+    server {
+        listen 0.0.0.0:PORT_PLACEHOLDER;
+        server_name _;
+        root /var/www/html/public;
+        index index.php;
+
+        location / {
+            try_files $uri $uri/ /index.php?$query_string;
+        }
+
+        location ~ \.php$ {
+            fastcgi_pass 127.0.0.1:9000;
+            fastcgi_index index.php;
+            include fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            fastcgi_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            fastcgi_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location ~ /\. { deny all; }
+    }
+}
+NGINXEND
+
+sed -i "s|PORT_PLACEHOLDER|$PORT|g" /etc/nginx/nginx.conf
+echo "✓ nginx configuration generated"
 echo ""
-echo "=== Application Ready ==="
+
+# Validate nginx config
+echo "Validating nginx configuration..."
+nginx -t
+echo ""
+
+# Start nginx
+echo "===== Starting nginx ====="
 exec nginx -g "daemon off;"
