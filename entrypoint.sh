@@ -34,10 +34,39 @@ echo "  DB_HOST: $DB_HOST"
 echo "  DB_DATABASE: $DB_DATABASE"
 echo ""
 
-# Generate nginx config from the PORT environment variable
-export PORT=${PORT:-80}
+# Get PORT from environment or default to 80
+PORT=${PORT:-80}
 
-sed -i "s|\${PORT:-80}|$PORT|g" /etc/nginx/sites-available/default
+# Generate nginx configuration with actual PORT value
+cat > /etc/nginx/sites-available/default << EOF
+server {
+    listen 0.0.0.0:$PORT;
+    server_name _;
+    root /var/www/html/public;
+    index index.php;
+
+    error_log /var/log/nginx/error.log warn;
+    access_log /var/log/nginx/access.log;
+
+    location / {
+        try_files \$uri \$uri/ /index.php?\$query_string;
+    }
+
+    location ~ \.php\$ {
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_param HTTP_PROXY "";
+        fastcgi_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        fastcgi_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    location ~ /\. {
+        deny all;
+    }
+}
+EOF
 
 echo "✓ nginx configured to listen on 0.0.0.0:$PORT"
 echo ""
@@ -52,7 +81,7 @@ echo ""
 # Start PHP-FPM in the background
 echo "Starting PHP-FPM..."
 php-fpm -D
-echo "✓ PHP-FPM started (PID: $(pgrep -f 'php-fpm.*master' || echo 'unknown'))"
+echo "✓ PHP-FPM started"
 echo ""
 
 # Give PHP-FPM time to open the socket
@@ -60,6 +89,8 @@ sleep 2
 
 # Start nginx in the foreground (Docker will monitor this)
 echo "Starting nginx..."
-echo "✓ Ready to handle requests"
+nginx -t 2>&1 || { echo "✗ nginx config validation failed!"; exit 1; }
+echo "✓ nginx started"
 echo ""
+echo "=== Application Ready ==="
 exec nginx -g "daemon off;"
