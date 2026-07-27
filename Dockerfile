@@ -17,8 +17,9 @@ RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs && \
 RUN cat > /start.sh << 'EOFSTART'
 #!/bin/sh
 
-# Create .env
-cat > .env << 'EOF'
+# Create .env if it doesn't exist
+if [ ! -f .env ]; then
+    cat > .env << 'EOF'
 APP_NAME=Growfunder
 APP_ENV=production
 APP_DEBUG=true
@@ -36,17 +37,18 @@ QUEUE_CONNECTION=sync
 TRUSTED_PROXIES=*
 LOG_CHANNEL=stderr
 EOF
+    echo "[STARTUP] Created .env file"
+fi
 
-echo "[STARTUP] Config caching..."
-php artisan config:cache || echo "[WARN] config:cache failed but continuing"
-php artisan route:cache || echo "[WARN] route:cache failed but continuing"
-
-# Get PORT from Railway environment or default to 8000
+# Get PORT from Railway environment
 PORT=${PORT:-8000}
-echo "[STARTUP] Listening on 0.0.0.0:$PORT with docroot /app/public"
 
-# Replace shell with PHP server (this exec never returns)
-exec php -S 0.0.0.0:$PORT -t /app/public
+echo "[STARTUP] Starting PHP development server"
+echo "[STARTUP] Listening on 0.0.0.0:$PORT"
+echo "[STARTUP] Document root: /app/public"
+
+# Start PHP development server
+exec php -S 0.0.0.0:$PORT -t /app/public -d display_errors=1
 EOFSTART
 
 chmod +x /start.sh
