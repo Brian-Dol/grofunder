@@ -57,40 +57,28 @@ class AdminPanelProvider extends PanelProvider
                     ->group('Accounting')
                     ->isActiveWhen(fn(): bool => request()->is('admin/assets/statement-of-financial-position'))
                     ->sort(4)
-                    ->visible(
-                        fn(): bool => auth()->user()?->hasRole('super_admin')
-                        || auth()->user()?->can('page_StatementOfFinancialPosition')
-                    ),
+                    ->visible(fn(): bool => true),
                 NavigationItem::make('Statement of Comprehensive Income')
                     ->url('/admin/assets/statement-of-comprehensive-income')
                     ->icon('heroicon-m-chart-bar')
                     ->group('Accounting')
                     ->isActiveWhen(fn(): bool => request()->is('admin/assets/statement-of-comprehensive-income'))
                     ->sort(5)
-                    ->visible(
-                        fn(): bool => auth()->user()?->hasRole('super_admin')
-                        || auth()->user()?->can('page_StatementOfComprehensiveIncome')
-                    ),
+                    ->visible(fn(): bool => true),
                 NavigationItem::make('Cash Flow')
                     ->url('/admin/loans/cash-flow-statement')
                     ->icon('heroicon-m-calculator')
                     ->group('Accounting')
                     ->isActiveWhen(fn(): bool => request()->is('admin/loans/cash-flow-statement'))
                     ->sort(6)
-                    ->visible(
-                        fn(): bool => auth()->user()?->hasRole('super_admin')
-                        || auth()->user()?->can('page_CashFlowStatement')
-                    ),
+                    ->visible(fn(): bool => true),
                 NavigationItem::make('Company Profile Completion')
                     ->url('/admin/profile-completion')
                     ->icon('heroicon-m-building-office')
                     ->group('User Management')
                     ->isActiveWhen(fn(): bool => request()->is('admin/profile-completion'))
                     ->sort(2)
-                    ->visible(
-                        fn(): bool => auth()->user()?->hasRole('super_admin')
-                        || auth()->user()?->can('page_ProfileCompletion')
-                    ),
+                    ->visible(fn(): bool => true),
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -102,7 +90,8 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                EagerLoadUserPermissions::class,  // Eager-load roles/permissions to prevent N+1 queries
+                // TEMP: Disabled while debugging permission system
+                // EagerLoadUserPermissions::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

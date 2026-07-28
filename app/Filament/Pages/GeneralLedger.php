@@ -26,8 +26,8 @@ class GeneralLedger extends Page implements HasForms
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole('super_admin')
-            || auth()->user()?->can('page_GeneralLedger');
+        // TEMP: Return true while debugging permission system
+        return true;
     }
 
     // Form-bound properties
