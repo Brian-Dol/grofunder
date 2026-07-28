@@ -35,95 +35,20 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('admin')
-            // Temporarily disable plugins to find the culprit
-            ->plugins([
-                // FilamentShieldPlugin::make()
-                //     ->gridColumns([
-                //         'default' => 1,
-                //         'sm' => 2,
-                //         'lg' => 2
-                //     ])
-                //     ->sectionColumnSpan(1)
-                //     ->checkboxListColumns([
-                //         'default' => 1,
-                //         'sm' => 2,
-                //         'lg' => 4,
-                //     ])
-                //     ->resourceCheckboxListColumns([
-                //         'default' => 1,
-                //         'sm' => 2,
-                //     ]),
-            ])
-            // ->brandLogo(asset('Logos/logo2.png'))
-            // ->brandLogoHeight('4rem')
-            // ->favicon(asset('Logos/logo2.png'))
+            ->plugins([])
             ->sidebarCollapsibleOnDesktop()
-
             ->login()
             ->registration(Register::class)
             ->passwordReset()
             ->emailVerification()
             ->profile()
-            ->default()
-            ->login()
             ->colors([
                 'primary' => Color::Amber,
             ])
-            // Temporarily disable auto-discovery to find the culprit resource/page
-            // ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            // ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Dashboard::class,
             ])
-            // Temporarily disabled to fix memory issue - load widgets manually
-            // ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            ->widgets([
-                // Widgets\AccountWidget::class,
-                // Widgets\FilamentInfoWidget::class,
-                // All heavy widgets disabled temporarily - will be re-enabled after dashboard loads
-            ])
-            ->navigationItems([
-                NavigationItem::make('Statement of Financial Position')
-                    ->url('/admin/assets/statement-of-financial-position')
-                    ->icon('heroicon-m-banknotes')
-                    ->group('Accounting')
-                    ->isActiveWhen(fn(): bool => request()->is('admin/assets/statement-of-financial-position'))
-                    ->sort(4)
-                    ->visible(
-                        fn(): bool => auth()->user()?->hasRole('super_admin')
-                        || auth()->user()?->can('page_StatementOfFinancialPosition')
-                    ),
-                NavigationItem::make('Statement of Comprehensive Income')
-                    ->url('/admin/assets/statement-of-comprehensive-income')
-                    ->icon('heroicon-m-chart-bar')
-                    ->group('Accounting')
-                    ->isActiveWhen(fn(): bool => request()->is('admin/assets/statement-of-comprehensive-income'))
-                    ->sort(5)
-                    ->visible(
-                        fn(): bool => auth()->user()?->hasRole('super_admin')
-                        || auth()->user()?->can('page_StatementOfComprehensiveIncome')
-                    ),
-                NavigationItem::make('Cash Flow')
-                    ->url('/admin/loans/cash-flow-statement')
-                    ->icon('heroicon-m-calculator')
-                    ->group('Accounting')
-                    ->isActiveWhen(fn(): bool => request()->is('admin/loans/cash-flow-statement'))
-                    ->sort(6)
-                    ->visible(
-                        fn(): bool => auth()->user()?->hasRole('super_admin')
-                        || auth()->user()?->can('page_CashFlowStatement')
-                    ),
-                NavigationItem::make('Company Profile Completion')
-                    ->url('/admin/profile-completion')
-                    ->icon('heroicon-m-building-office')
-                    ->group('User Management')
-                    ->isActiveWhen(fn(): bool => request()->is('admin/profile-completion'))
-                    ->sort(2)
-                    ->visible(
-                        fn(): bool => auth()->user()?->hasRole('super_admin')
-                        || auth()->user()?->can('page_ProfileCompletion')
-                    ),
-            ])
+            ->widgets([])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -134,9 +59,6 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                // Temporarily disabled to reduce memory footprint
-                // CheckProfileCompleteness::class,
-                // CheckSubscriptionValidity::class
             ])
             ->authMiddleware([
                 Authenticate::class,
