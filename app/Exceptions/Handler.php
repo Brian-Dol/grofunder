@@ -23,6 +23,14 @@ class Handler extends ExceptionHandler
      */
     public function register(): void
     { 
+        // Log all exceptions for debugging
+        $this->reportable(function (Throwable $e) {
+            \Log::error('Exception caught: ' . get_class($e) . ' - ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString(),
+            ]);
+        });
+        
         // Handle CSRF token mismatch (419 errors) more gracefully
         $this->renderable(function (\Illuminate\Session\TokenMismatchException $e, $request) {
             // If it's a logout request, just redirect to home/login without error
@@ -36,10 +44,6 @@ class Handler extends ExceptionHandler
             // For other requests, redirect to login
             return redirect()->route('login')
                 ->with('error', 'Your session has expired. Please log in again.');
-        });
-        
-        $this->reportable(function (Throwable $e) {
-            //
         });
     }
 }
