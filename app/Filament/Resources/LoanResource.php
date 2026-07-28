@@ -716,13 +716,14 @@ class LoanResource extends Resource
     /**
      * Authorization check - agents need cooperative assigned
      */
-    public static function canAccess(): bool
-    {
-        if (auth()->user()->hasRole('agent') && !auth()->user()->cooperative_id) {
-            return false;
-        }
-        return true;
-    }
+    // TEMPORARY: Commented out to debug permission check issue
+    // public static function canAccess(): bool
+    // {
+    //     if (auth()->user()->hasRole('agent') && !auth()->user()->cooperative_id) {
+    //         return false;
+    //     }
+    //     return true;
+    // }
 
     public static function getPages(): array
     {

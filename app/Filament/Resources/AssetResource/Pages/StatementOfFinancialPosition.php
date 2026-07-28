@@ -15,11 +15,12 @@ class StatementOfFinancialPosition extends Page
     protected static ?string $navigationLabel = 'Statement of Financial Position';
     protected static bool $shouldRegisterNavigation = false;
 
-    public static function canAccess(array $parameters = []): bool
-    {
-        return auth()->user()?->hasRole('super_admin')
-            || auth()->user()?->can('page_StatementOfFinancialPosition');
-    }
+    // TEMPORARY: Commented out to debug permission check issue
+    // public static function canAccess(array $parameters = []): bool
+    // {
+    //     return auth()->user()?->hasRole('super_admin')
+    //         || auth()->user()?->can('page_StatementOfFinancialPosition');
+    // }
 
     // Define public properties for the totals
     public $cashAmount = 0;

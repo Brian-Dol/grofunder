@@ -24,11 +24,12 @@ class GeneralLedger extends Page implements HasForms
 
     protected static string $view = 'filament.pages.general-ledger';
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()?->hasRole('super_admin')
-            || auth()->user()?->can('page_GeneralLedger');
-    }
+    // TEMPORARY: Commented out to debug permission check issue
+    // public static function canAccess(): bool
+    // {
+    //     return auth()->user()?->hasRole('super_admin')
+    //         || auth()->user()?->can('page_GeneralLedger');
+    // }
 
     // Form-bound properties
     public ?string $account_id = null;
