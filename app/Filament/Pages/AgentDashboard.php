@@ -24,9 +24,7 @@ class AgentDashboard extends Page
      */
     public static function canAccess(): bool
     {
-        // TEMPORARY: Allow all authenticated users during debugging
-        // TODO: Restore permission checks after fixing Spatie permissions
-        return true;
+        return auth()->check() && auth()->user()->hasRole('agent');
     }
 
     /**

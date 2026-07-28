@@ -17,9 +17,8 @@ class StatementOfFinancialPosition extends Page
 
     public static function canAccess(array $parameters = []): bool
     {
-        // TEMPORARY: Allow all authenticated users during debugging
-        // TODO: Restore permission checks after fixing Spatie permissions
-        return true;
+        return auth()->user()?->hasRole('super_admin')
+            || auth()->user()?->can('page_StatementOfFinancialPosition');
     }
 
     // Define public properties for the totals
