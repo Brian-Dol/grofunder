@@ -84,8 +84,18 @@ class Borrower extends Model implements HasMedia
 
         // Agent-specific scope: agents only see borrowers in their cooperative
         static::addGlobalScope('agent_cooperative', function (Builder $query) {
-            if (auth()->check() && auth()->user()->hasRole('agent')) {
-                $query->where('cooperative_id', auth()->user()->cooperative_id);
+            if (auth()->check()) {
+                try {
+                    // TEMP: Wrapped in try-catch while debugging permission system
+                    if (auth()->user()->hasRole('agent')) {
+                        $query->where('cooperative_id', auth()->user()->cooperative_id);
+                    }
+                } catch (\Exception $e) {
+                    \Log::warning('Error checking agent role in Borrower scope', [
+                        'error' => $e->getMessage(),
+                        'user_id' => auth()->id(),
+                    ]);
+                }
             }
         });
     }
