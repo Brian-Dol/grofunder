@@ -89,15 +89,21 @@ EOF
     echo "[STARTUP] Created .env file"
 fi
 
+# Clear all caches to ensure fresh routes
+echo "[STARTUP] Clearing application caches..."
+php artisan cache:clear || true
+php artisan route:clear || true
+php artisan view:clear || true
+php artisan config:clear || true
+
 # Run database migrations and seed admin user
 echo "[STARTUP] Running database migrations..."
 php artisan migrate --force || echo "[WARNING] Migrations may have already run"
 
-echo "[STARTUP] Seeding admin user..."
-php artisan db:seed --class=CreateAdminSeeder --force || echo "[WARNING] Admin seeder may have already run"
+echo "[STARTUP] Running database seeders..."
+php artisan db:seed --force || echo "[WARNING] Seeders may have already run"
 
-# Clear caches for fresh start
-php artisan cache:clear || true
+echo "[STARTUP] Database setup complete"
 php artisan config:clear || true
 
 # Start Apache

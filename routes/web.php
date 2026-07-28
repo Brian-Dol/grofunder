@@ -40,52 +40,6 @@ Route::get('/debug-log', function () {
     );
 });
 
-// TEMPORARY ROUTE - RUN SEEDERS TO POPULATE ROLES/PERMISSIONS (remove after first run)
-Route::get('/run-seeders', function () {
-    // Security check - require token in query string
-    $token = request('token');
-    $expectedToken = env('SETUP_TOKEN', 'setup123');
-    
-    if ($token !== $expectedToken) {
-        return response()->json(['error' => 'Unauthorized - provide ?token=' . $expectedToken], 401);
-    }
-    
-    try {
-        echo "Starting seeder run...\n";
-        
-        // Run each seeder in the correct order
-        echo "\n1. Running NativeShieldSeeder...\n";
-        \Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\NativeShieldSeeder']);
-        
-        echo "\n2. Running PagePermissionsSeeder...\n";
-        \Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\PagePermissionsSeeder']);
-        
-        echo "\n3. Running GrowfunderRolesSeeder...\n";
-        \Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\GrowfunderRolesSeeder']);
-        
-        echo "\n4. Running CreateAdminSeeder...\n";
-        \Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\CreateAdminSeeder']);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'All seeders ran successfully!',
-            'seeders' => [
-                'NativeShieldSeeder',
-                'PagePermissionsSeeder',
-                'GrowfunderRolesSeeder',
-                'CreateAdminSeeder'
-            ],
-            'next_step' => 'Visit https://your-app/admin and login with your admin credentials'
-        ], 200);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ], 500);
-    }
-});
-
 Route::get('/', function () {
     return view('welcome');
 });
