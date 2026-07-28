@@ -121,24 +121,37 @@ echo "[STARTUP] ✓ Migrations complete"
 # Run seeders in order (this is critical!)
 echo "[STARTUP] Running database seeders..."
 echo "[STARTUP]   1/4 NativeShieldSeeder..."
-php artisan db:seed --class=Database\\Seeders\\NativeShieldSeeder --force 2>&1 | head -10 || true
+php artisan db:seed --class=Database\\Seeders\\NativeShieldSeeder --force 2>&1 || {
+    echo "[STARTUP] ⚠️  NativeShieldSeeder failed, checking if roles exist..."
+}
 
 echo "[STARTUP]   2/4 PagePermissionsSeeder..."
-php artisan db:seed --class=Database\\Seeders\\PagePermissionsSeeder --force 2>&1 | head -10 || true
+php artisan db:seed --class=Database\\Seeders\\PagePermissionsSeeder --force 2>&1 || {
+    echo "[STARTUP] ⚠️  PagePermissionsSeeder failed, continuing..."
+}
 
 echo "[STARTUP]   3/4 GrowfunderRolesSeeder..."
-php artisan db:seed --class=Database\\Seeders\\GrowfunderRolesSeeder --force 2>&1 | head -10 || true
+php artisan db:seed --class=Database\\Seeders\\GrowfunderRolesSeeder --force 2>&1 || {
+    echo "[STARTUP] ⚠️  GrowfunderRolesSeeder failed, continuing..."
+}
 
 echo "[STARTUP]   4/4 CreateAdminSeeder..."
-php artisan db:seed --class=Database\\Seeders\\CreateAdminSeeder --force 2>&1 | head -10 || true
+php artisan db:seed --class=Database\\Seeders\\CreateAdminSeeder --force 2>&1 || {
+    echo "[STARTUP] ⚠️  CreateAdminSeeder failed, continuing..."
+}
 
-echo "[STARTUP] ✓ All seeders executed"
+echo "[STARTUP] ✓ All seeders attempted"
 
 # Verify roles exist in database
 echo "[STARTUP] Verifying database state..."
-ROLES_COUNT=$(php artisan tinker --execute "echo \Spatie\Permission\Models\Role::count();" 2>&1 | grep -o '[0-9]\+' | head -1 || echo "0")
-PERMISSIONS_COUNT=$(php artisan tinker --execute "echo \Spatie\Permission\Models\Permission::count();" 2>&1 | grep -o '[0-9]\+' | head -1 || echo "0")
-echo "[STARTUP] Roles: $ROLES_COUNT, Permissions: $PERMISSIONS_COUNT"
+php artisan tinker --execute '
+$roleCount = \Spatie\Permission\Models\Role::count();
+$permCount = \Spatie\Permission\Models\Permission::count();  
+$userCount = \App\Models\User::count();
+echo "   Roles: " . $roleCount . "\n";
+echo "   Permissions: " . $permCount . "\n";
+echo "   Users: " . $userCount . "\n";
+' 2>/dev/null || echo "[STARTUP] (Could not verify database content)"
 
 echo "[STARTUP] ========================================="
 echo "[STARTUP] ✓ Initialization Complete - Starting Apache"
