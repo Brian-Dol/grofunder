@@ -22,7 +22,23 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-
+// TEMPORARY DEBUG ROUTE - READ LARAVEL LOGS DIRECTLY (bypasses custom error page rendering)
+Route::get('/debug-log', function () {
+    $logPath = storage_path('logs/laravel.log');
+    if (!file_exists($logPath)) {
+        return response('Log file not found', 404);
+    }
+    $logContent = file_get_contents($logPath);
+    // Show last 150 lines (most recent errors at bottom)
+    $lines = array_slice(explode("\n", $logContent), -150);
+    return response(
+        '<pre style="background:#f5f5f5;padding:20px;font-family:monospace;white-space:pre-wrap;word-wrap:break-word;">' . 
+        htmlspecialchars(implode("\n", $lines)) . 
+        '</pre>',
+        200,
+        ['Content-Type' => 'text/html; charset=UTF-8']
+    );
+});
 
 Route::get('/', function () {
     return view('welcome');
