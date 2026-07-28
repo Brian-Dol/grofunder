@@ -86,7 +86,7 @@ return [
     ],
 
     'register_role_policy' => [
-        'enabled' => true,
+        'enabled' => false, // TEMP: Disabled while debugging permission system crashes
     ],
 
 ];
