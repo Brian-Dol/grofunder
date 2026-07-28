@@ -86,8 +86,8 @@ class Borrower extends Model implements HasMedia
         static::addGlobalScope('agent_cooperative', function (Builder $query) {
             if (auth()->check()) {
                 try {
-                    // TEMP: Wrapped in try-catch while debugging permission system
-                    if (auth()->user()->hasRole('agent')) {
+                    // TEMP: HasRoles trait disabled - check if method exists
+                    if (method_exists(auth()->user(), 'hasRole') && auth()->user()->hasRole('agent')) {
                         $query->where('cooperative_id', auth()->user()->cooperative_id);
                     }
                 } catch (\Exception $e) {

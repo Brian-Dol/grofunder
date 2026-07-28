@@ -38,7 +38,7 @@ class BorrowerBulkImportPage extends Page implements HasForms
 
     public static function canAccess(): bool
     {
-        // TEMP: Return true while debugging permission system
+        // TEMP: Role checking disabled - return true for all
         return true;
     }
 

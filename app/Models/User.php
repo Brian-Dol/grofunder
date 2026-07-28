@@ -31,8 +31,9 @@ class User extends Authenticatable implements Wallet, HasMedia, FilamentUser
     use Notifiable;
     use TwoFactorAuthenticatable;
     use HasWallet, HasWallets;
-    use HasRoles;
-    use HasPanelShield;
+    // TEMP: Disabled Spatie HasRoles while debugging permission system crash
+    // use HasRoles;
+    // use HasPanelShield;
     use LogsActivity;
     use InteractsWithMedia;
 
