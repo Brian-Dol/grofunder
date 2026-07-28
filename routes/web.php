@@ -22,6 +22,63 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// TEMPORARY DEBUG ROUTE - READ LARAVEL LOGS
+Route::get('/debug-log', function () {
+    $logPath = storage_path('logs/laravel.log');
+    if (!file_exists($logPath)) {
+        return response('Log file not found', 404);
+    }
+    $logContent = file_get_contents($logPath);
+    $lines = array_slice(explode("\n", $logContent), -200);
+    return response(
+        '<pre style="background:#000;color:#0f0;padding:20px;font-family:monospace;white-space:pre-wrap;word-wrap:break-word;font-size:12px;">' . 
+        htmlspecialchars(implode("\n", $lines)) . 
+        '</pre>',
+        200,
+        ['Content-Type' => 'text/html; charset=UTF-8']
+    );
+});
+
+// TEMPORARY ROUTE - RUN SEEDERS (ENSURE ROLES/PERMISSIONS IN DATABASE)
+Route::get('/run-seeders', function () {
+    $token = request('token');
+    if ($token !== env('SETUP_TOKEN', 'setup123')) {
+        return response()->json(['error' => 'Unauthorized - token invalid'], 401);
+    }
+    
+    try {
+        $results = [];
+        
+        $results[] = "▶ Running NativeShieldSeeder...";
+        \Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\NativeShieldSeeder']);
+        $results[] = \Artisan::output();
+        
+        $results[] = "▶ Running PagePermissionsSeeder...";
+        \Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\PagePermissionsSeeder']);
+        $results[] = \Artisan::output();
+        
+        $results[] = "▶ Running GrowfunderRolesSeeder...";
+        \Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\GrowfunderRolesSeeder']);
+        $results[] = \Artisan::output();
+        
+        $results[] = "▶ Running CreateAdminSeeder...";
+        \Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\CreateAdminSeeder']);
+        $results[] = \Artisan::output();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'All seeders executed successfully',
+            'output' => implode("\n", $results)
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});
+
 Route::get('/', function () {
     return view('welcome');
 });

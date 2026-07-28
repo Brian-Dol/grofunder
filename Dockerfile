@@ -69,6 +69,11 @@ EOF
 # Startup script to create .env and run migrations
 RUN cat > /startup.sh << 'EOFSTART'
 #!/bin/bash
+set -e
+
+echo "========================================="
+echo "[STARTUP] Growfunder Application Starting"
+echo "========================================="
 
 # Create .env if it doesn't exist (will be overridden by Railway env vars)
 if [ ! -f /var/www/html/.env ]; then
@@ -86,25 +91,58 @@ QUEUE_CONNECTION=sync
 TRUSTED_PROXIES=*
 LOG_CHANNEL=stderr
 EOF
-    echo "[STARTUP] Created .env file"
+    echo "[STARTUP] ✓ Created .env file"
 fi
 
-# Clear all caches to ensure fresh routes
+# Verify database connection
+echo "[STARTUP] Waiting for database connection..."
+for i in {1..30}; do
+    if php artisan db:seed --help > /dev/null 2>&1; then
+        echo "[STARTUP] ✓ Database connection successful"
+        break
+    fi
+    echo "[STARTUP] Attempt $i/30... waiting for database"
+    sleep 2
+done
+
+# Clear all caches to ensure fresh routes and config
 echo "[STARTUP] Clearing application caches..."
 php artisan cache:clear || true
 php artisan route:clear || true
 php artisan view:clear || true
 php artisan config:clear || true
+echo "[STARTUP] ✓ Caches cleared"
 
-# Run database migrations and seed admin user
+# Run database migrations
 echo "[STARTUP] Running database migrations..."
-php artisan migrate --force || echo "[WARNING] Migrations may have already run"
+php artisan migrate --force 2>&1 | head -20 || echo "[STARTUP] Migrations already completed"
+echo "[STARTUP] ✓ Migrations complete"
 
+# Run seeders in order (this is critical!)
 echo "[STARTUP] Running database seeders..."
-php artisan db:seed --force || echo "[WARNING] Seeders may have already run"
+echo "[STARTUP]   1/4 NativeShieldSeeder..."
+php artisan db:seed --class=Database\\Seeders\\NativeShieldSeeder --force 2>&1 | head -10 || true
 
-echo "[STARTUP] Database setup complete"
-php artisan config:clear || true
+echo "[STARTUP]   2/4 PagePermissionsSeeder..."
+php artisan db:seed --class=Database\\Seeders\\PagePermissionsSeeder --force 2>&1 | head -10 || true
+
+echo "[STARTUP]   3/4 GrowfunderRolesSeeder..."
+php artisan db:seed --class=Database\\Seeders\\GrowfunderRolesSeeder --force 2>&1 | head -10 || true
+
+echo "[STARTUP]   4/4 CreateAdminSeeder..."
+php artisan db:seed --class=Database\\Seeders\\CreateAdminSeeder --force 2>&1 | head -10 || true
+
+echo "[STARTUP] ✓ All seeders executed"
+
+# Verify roles exist in database
+echo "[STARTUP] Verifying database state..."
+ROLES_COUNT=$(php artisan tinker --execute "echo \Spatie\Permission\Models\Role::count();" 2>&1 | grep -o '[0-9]\+' | head -1 || echo "0")
+PERMISSIONS_COUNT=$(php artisan tinker --execute "echo \Spatie\Permission\Models\Permission::count();" 2>&1 | grep -o '[0-9]\+' | head -1 || echo "0")
+echo "[STARTUP] Roles: $ROLES_COUNT, Permissions: $PERMISSIONS_COUNT"
+
+echo "[STARTUP] ========================================="
+echo "[STARTUP] ✓ Initialization Complete - Starting Apache"
+echo "[STARTUP] ========================================="
 
 # Start Apache
 exec apache2-foreground
@@ -114,4 +152,3 @@ RUN chmod +x /startup.sh
 
 EXPOSE 80
 CMD ["/startup.sh"]
-
