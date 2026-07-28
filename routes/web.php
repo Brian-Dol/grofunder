@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // TEMPORARY DEBUG ROUTE - TEST DATABASE QUERY
-Route::get('/debug-borrowers', function () {
+Route::get('/test-db', function () {
     try {
         $count = \App\Models\Borrower::count();
         $borrowers = \App\Models\Borrower::limit(5)->get(['id', 'first_name', 'last_name', 'email']);
