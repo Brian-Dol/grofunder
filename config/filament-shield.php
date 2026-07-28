@@ -53,9 +53,9 @@ return [
     ],
 
     'entities' => [
-        'pages' => true,
-        'widgets' => true,
-        'resources' => true,
+        'pages' => false, // TEMP: Disabled while debugging - resources crash
+        'widgets' => false, // TEMP: Disabled while debugging
+        'resources' => false, // TEMP: Disabled while debugging - THIS IS THE CULPRIT
         'custom_permissions' => false,
     ],
 
