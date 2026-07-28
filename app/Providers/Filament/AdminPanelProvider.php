@@ -49,6 +49,19 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->widgets([])
+            ->navigationItems([
+                // Test adding back ONE item to see if navigation items are the culprit
+                NavigationItem::make('Statement of Financial Position')
+                    ->url('/admin/assets/statement-of-financial-position')
+                    ->icon('heroicon-m-banknotes')
+                    ->group('Accounting')
+                    ->isActiveWhen(fn(): bool => request()->is('admin/assets/statement-of-financial-position'))
+                    ->sort(4)
+                    ->visible(
+                        fn(): bool => auth()->user()?->hasRole('super_admin')
+                        || auth()->user()?->can('page_StatementOfFinancialPosition')
+                    ),
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
