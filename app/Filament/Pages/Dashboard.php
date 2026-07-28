@@ -71,7 +71,9 @@ class Dashboard extends BaseDashboard
      */
     public function getWidgets(): array
     {
-        return Filament::getWidgets();
+        // Temporarily return empty array to avoid widget loading errors
+        // TODO: Re-enable widgets after fixing memory issue
+        return [];
     }
 
     /**
