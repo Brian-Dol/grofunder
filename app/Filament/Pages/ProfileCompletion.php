@@ -30,12 +30,11 @@ class ProfileCompletion extends Page implements HasForms, HasActions
 
     protected static bool $shouldRegisterNavigation = false;
 
-    // TEMPORARY: Commented out to debug permission check issue
-    // public static function canAccess(): bool
-    // {
-    //     return auth()->user()?->hasRole('super_admin')
-    //         || auth()->user()?->can('page_ProfileCompletion');
-    // }
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->hasRole('super_admin')
+            || auth()->user()?->can('page_ProfileCompletion');
+    }
 
     public ?array $data = [];
 

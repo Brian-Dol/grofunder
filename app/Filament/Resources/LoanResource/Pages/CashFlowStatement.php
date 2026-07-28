@@ -24,12 +24,11 @@ class CashFlowStatement extends Page implements HasTable
     protected static ?string $title = 'Cash Flow Statement';
     protected static bool $shouldRegisterNavigation = false;
 
-    // TEMPORARY: Commented out to debug permission check issue
-    // public static function canAccess(array $parameters = []): bool
-    // {
-    //     return auth()->user()?->hasRole('super_admin')
-    //         || auth()->user()?->can('page_CashFlowStatement');
-    // }
+    public static function canAccess(array $parameters = []): bool
+    {
+        return auth()->user()?->hasRole('super_admin')
+            || auth()->user()?->can('page_CashFlowStatement');
+    }
 
     public $wallets;
     public $totalBalance;

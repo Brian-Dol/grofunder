@@ -22,11 +22,10 @@ class AgentDashboard extends Page
     /**
      * Only allow users with 'agent' role to access this page
      */
-    // TEMPORARY: Commented out to debug permission check issue
-    // public static function canAccess(): bool
-    // {
-    //     return auth()->check() && auth()->user()->hasRole('agent');
-    // }
+    public static function canAccess(): bool
+    {
+        return auth()->check() && auth()->user()->hasRole('agent');
+    }
 
     /**
      * Get agent's cooperative info
