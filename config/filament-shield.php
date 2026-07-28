@@ -80,7 +80,7 @@ return [
     ],
 
     'discovery' => [
-        'discover_all_resources' => false,
+        'discover_all_resources' => false, // TEMP: Disabled while debugging
         'discover_all_widgets' => false,
         'discover_all_pages' => false,
     ],
