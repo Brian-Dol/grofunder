@@ -265,6 +265,8 @@ class Loan extends Model implements HasMedia
         });
 
         // Agent-specific scope: agents only see loans for borrowers in their cooperative
+        // TEMPORARILY DISABLED - Causes cascading permission loads due to whereHas + recursive hasRole
+        /*
         static::addGlobalScope('agent_cooperative', function (Builder $query) {
             if (auth()->check() && auth()->user()->hasRole('agent')) {
                 $query->whereHas('borrower', function ($q) {
@@ -272,5 +274,6 @@ class Loan extends Model implements HasMedia
                 });
             }
         });
+        */
     }
 }

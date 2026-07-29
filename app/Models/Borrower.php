@@ -71,8 +71,6 @@ class Borrower extends Model implements HasMedia
 
     protected static function booted(): void
     {
-        // TEMPORARILY DISABLED FOR DEBUGGING - Testing if global scopes are the issue
-        /*
         static::addGlobalScope('org', function (Builder $query) {
             if (auth()->check()) {
                 $query->where('organization_id', auth()->user()->organization_id)
@@ -82,6 +80,8 @@ class Borrower extends Model implements HasMedia
         });
 
         // Agent-specific scope: agents only see borrowers in their cooperative
+        // TEMPORARILY DISABLED - Causes cascading permission loads when used with whereHas
+        /*
         static::addGlobalScope('agent_cooperative', function (Builder $query) {
             if (auth()->check() && auth()->user()->hasRole('agent')) {
                 $query->where('cooperative_id', auth()->user()->cooperative_id);
