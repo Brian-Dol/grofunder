@@ -50,7 +50,7 @@ class AdminPanelProvider extends PanelProvider
             // TEMPORARILY DISABLED - Loading 34 resources causes memory exhaustion
             // ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->resources([
-                BorrowerResource::class,
+                // BorrowerResource::class, // TEMPORARILY DISABLED FOR TESTING
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
