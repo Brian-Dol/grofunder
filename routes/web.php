@@ -43,6 +43,9 @@ Route::get('/test-db', function () {
         ], 500);
     }
 });
+
+// TEMPORARY DEBUG ROUTE - VIEW LOGS
+Route::get('/logs', function () {
     $logPath = storage_path('logs/laravel.log');
     if (!file_exists($logPath)) {
         return response('Log file not found', 404);
