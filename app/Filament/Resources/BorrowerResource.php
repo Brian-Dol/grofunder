@@ -784,7 +784,9 @@ class BorrowerResource extends Resource
      */
     public static function canAccess(): bool
     {
-        // TEMP: Role checking disabled - return true for all
+        if (auth()->user()->hasRole('agent') && !auth()->user()->cooperative_id) {
+            return false;
+        }
         return true;
     }
 

@@ -24,8 +24,7 @@ class AgentDashboard extends Page
      */
     public static function canAccess(): bool
     {
-        // TEMP: Role checking disabled - return true for all
-        return true;
+        return auth()->check() && auth()->user()->hasRole('agent');
     }
 
     /**

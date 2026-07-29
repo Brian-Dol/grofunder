@@ -38,8 +38,19 @@ class BorrowerBulkImportPage extends Page implements HasForms
 
     public static function canAccess(): bool
     {
-        // TEMP: Role checking disabled - return true for all
-        return true;
+        $user = auth()->user();
+        
+        // Super admin and admins can access
+        if ($user && $user->hasRole(['super_admin', 'admin'])) {
+            return true;
+        }
+
+        // Agents can access if they have a cooperative assigned
+        if ($user && $user->hasRole('agent') && $user->cooperative_id) {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getFormSchema(): array

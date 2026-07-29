@@ -266,20 +266,10 @@ class Loan extends Model implements HasMedia
 
         // Agent-specific scope: agents only see loans for borrowers in their cooperative
         static::addGlobalScope('agent_cooperative', function (Builder $query) {
-            if (auth()->check()) {
-                try {
-                    // TEMP: HasRoles trait disabled - check if method exists
-                    if (method_exists(auth()->user(), 'hasRole') && auth()->user()->hasRole('agent')) {
-                        $query->whereHas('borrower', function ($q) {
-                            $q->where('cooperative_id', auth()->user()->cooperative_id);
-                        });
-                    }
-                } catch (\Exception $e) {
-                    \Log::warning('Error checking agent role in Loan scope', [
-                        'error' => $e->getMessage(),
-                        'user_id' => auth()->id(),
-                    ]);
-                }
+            if (auth()->check() && auth()->user()->hasRole('agent')) {
+                $query->whereHas('borrower', function ($q) {
+                    $q->where('cooperative_id', auth()->user()->cooperative_id);
+                });
             }
         });
     }

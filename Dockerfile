@@ -80,7 +80,7 @@ if [ ! -f /var/www/html/.env ]; then
     cat > /var/www/html/.env << 'EOF'
 APP_NAME=Growfunder
 APP_ENV=production
-APP_DEBUG=true
+APP_DEBUG=false
 APP_KEY=base64:tE6w4W4Y+nhteXfQVPCAHKzOnKiUqJqbb2jQ9LTHrKA=
 APP_URL=https://web-production-848ef.up.railway.app
 DB_CONNECTION=pgsql

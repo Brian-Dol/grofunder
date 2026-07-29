@@ -93,8 +93,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                // TEMP: Disabled while debugging permission system
-                // EagerLoadUserPermissions::class,
+                EagerLoadUserPermissions::class,  // Eager-load roles/permissions to prevent N+1 queries
             ])
             ->authMiddleware([
                 Authenticate::class,
