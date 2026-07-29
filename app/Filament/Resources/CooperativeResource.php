@@ -135,9 +135,10 @@ class CooperativeResource extends Resource
     {
         $query = parent::getEloquentQuery();
         
-        if (auth()->user()->hasRole('agent') && auth()->user()->cooperative_id) {
-            $query->where('id', auth()->user()->cooperative_id);
-        }
+        // TEMPORARILY DISABLED - hasRole() in getEloquentQuery causes permission cache bypass
+        // if (auth()->user()->hasRole('agent') && auth()->user()->cooperative_id) {
+        //     $query->where('id', auth()->user()->cooperative_id);
+        // }
         
         return $query;
     }

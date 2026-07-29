@@ -196,15 +196,16 @@ class DocumentResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
+        // TEMPORARILY DISABLED - hasRole() + whereHas() causes cascading permission loads
         // Agents only see documents for their cooperative
-        $user = Auth::user();
-        if ($user && $user->hasRole('agent') && $user->cooperative_id) {
-            $query->whereHas('borrower', function ($q) use ($user) {
-                $q->where('cooperative_id', $user->cooperative_id);
-            })->orWhereHas('loan.borrower', function ($q) use ($user) {
-                $q->where('cooperative_id', $user->cooperative_id);
-            });
-        }
+        // $user = Auth::user();
+        // if ($user && $user->hasRole('agent') && $user->cooperative_id) {
+        //     $query->whereHas('borrower', function ($q) use ($user) {
+        //         $q->where('cooperative_id', $user->cooperative_id);
+        //     })->orWhereHas('loan.borrower', function ($q) use ($user) {
+        //         $q->where('cooperative_id', $user->cooperative_id);
+        //     });
+        // }
 
         return $query;
     }
