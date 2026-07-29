@@ -71,7 +71,8 @@ class Borrower extends Model implements HasMedia
 
     protected static function booted(): void
     {
-
+        // TEMPORARILY DISABLED FOR DEBUGGING
+        /*
         static::addGlobalScope('org', function (Builder $query) {
 
             if (auth()->check()) {
@@ -88,6 +89,7 @@ class Borrower extends Model implements HasMedia
                 $query->where('cooperative_id', auth()->user()->cooperative_id);
             }
         });
+        */
     }
 
 }
