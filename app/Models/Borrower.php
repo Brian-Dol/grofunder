@@ -71,12 +71,8 @@ class Borrower extends Model implements HasMedia
 
     protected static function booted(): void
     {
-        // TEMPORARILY DISABLED FOR DEBUGGING
-        /*
         static::addGlobalScope('org', function (Builder $query) {
-
             if (auth()->check()) {
-
                 $query->where('organization_id', auth()->user()->organization_id)
                 ->where('branch_id', auth()->user()->branch_id)
                 ->orWhere('organization_id',"=",NULL);
@@ -89,7 +85,6 @@ class Borrower extends Model implements HasMedia
                 $query->where('cooperative_id', auth()->user()->cooperative_id);
             }
         });
-        */
     }
 
 }

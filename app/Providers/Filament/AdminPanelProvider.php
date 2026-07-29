@@ -46,8 +46,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            // TEMPORARILY DISABLED FOR DEBUGGING
-            // ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Dashboard::class,
@@ -94,7 +93,8 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                EagerLoadUserPermissions::class,  // Eager-load roles/permissions to prevent N+1 queries
+                // DISABLED: EagerLoadUserPermissions causes memory exhaustion with 401 permissions
+                // EagerLoadUserPermissions::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
