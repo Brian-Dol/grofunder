@@ -79,6 +79,11 @@ class Borrower extends Model implements HasMedia
             }
         });
 
+        // TEST: Return empty result set to see if problem is data volume or queries
+        static::addGlobalScope('test_empty', function (Builder $query) {
+            $query->whereRaw('1=0'); // Return zero rows
+        });
+
         // Agent-specific scope: agents only see borrowers in their cooperative
         // TEMPORARILY DISABLED - Causes cascading permission loads when used with whereHas
         /*
