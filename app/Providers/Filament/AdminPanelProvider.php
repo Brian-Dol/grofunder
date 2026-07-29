@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 use Filament\Navigation\MenuItem;
 use App\Filament\Resources\LoanResource;
+use App\Filament\Resources\BorrowerResource;
 use Filament\Navigation\NavigationItem;
 use Filament\Navigation\NavigationBuilder;
 use Filament\Navigation\NavigationGroup;
@@ -46,7 +47,11 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            // TEMPORARILY DISABLED - Loading 34 resources causes memory exhaustion
+            // ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            ->resources([
+                BorrowerResource::class,
+            ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Dashboard::class,
