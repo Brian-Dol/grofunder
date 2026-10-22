@@ -1,160 +1,96 @@
-### Loan Management Software.
+<div align="center">
 
-## Requirements
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:064e3b,100:22c55e&height=170&section=header&text=Growfunder&fontColor=ffffff&fontSize=48&fontAlignY=38&desc=Loan%20management%20and%20double-entry%20accounting%20built%20on%20Laravel%20%2B%20Filament&descAlignY=60&descSize=16" alt="Growfunder" />
 
-- PHP >= 8.2
+![PHP](https://img.shields.io/badge/PHP-8.2+-777bb4?style=flat-square&logo=php&logoColor=white)
+![Laravel](https://img.shields.io/badge/Laravel-10-ff2d20?style=flat-square&logo=laravel&logoColor=white)
+![Filament](https://img.shields.io/badge/Filament-3-fdae4b?style=flat-square)
+![Livewire](https://img.shields.io/badge/Livewire-3-fb70a9?style=flat-square&logo=livewire&logoColor=white)
+![M-Pesa](https://img.shields.io/badge/M--Pesa-STK%20Push-4caf50?style=flat-square)
+![Docker](https://img.shields.io/badge/Docker-ready-2496ed?style=flat-square&logo=docker&logoColor=white)
 
-![sample1](https://github.com/user-attachments/assets/f57b4435-24a4-467d-9518-d8397b2e81ce)
-![sample2](https://github.com/user-attachments/assets/84e6a945-e47b-49a9-a950-660ecba8ced5)
-![sample3](https://github.com/user-attachments/assets/0e3bbcb2-d370-481d-b47b-e22b7c0addd1)
-![sample4](https://github.com/user-attachments/assets/3bd6032a-a62e-4469-94ff-74a7bfc1058d)
+</div>
 
-## How it works
+Growfunder is a web-based **loan management system** for lenders and cooperatives. It covers borrowers, loan products, repayments, wallets and a full double-entry ledger, with a Filament admin panel and permission-gated modules.
 
-The Loan Management software is a web-based application that helps manage and track loans efficiently. It provides features to streamline the loan application process, automate loan approvals, and monitor loan repayments. This README file provides an overview of the software and instructions for installation, configuration, and usage.
+## ✨ Features
 
-## Features
+- 👤 **Borrowers and loans**: applications, loan types (rate and interest cycle), restructures, roll-overs, agreement and settlement forms (PDF)
+- 💸 **Repayments** tracking, with **bulk import** of borrowers, loans and repayments plus an import log
+- 📱 **M-Pesa payments** through Safaricom Daraja, with callback, timeout and status-query endpoints
+- 👛 **Wallets and transfers** (e.g. loan wallet → expense wallet) with a full transaction history
+- 📒 **Double-entry accounting**: chart of accounts, journal entries, ledger, trial balance, statement of financial position, comprehensive income and cash flow
+- 🧾 **Expenses, assets, payroll** (employees, salary scales, tax bands, payslips)
+- 🗂️ **Document management** for KYC, agreements and other borrower files
+- 🤖 **AI credit scoring** service that calls an OpenAI-compatible API (`OPENAI_API_KEY`)
+- 📊 **Dashboard widgets** (portfolio overview, outstanding balance, repayment trends, revenue vs expenses) and Excel exports
+- 📧 **Scheduled reports**: agent (daily 09:00), system and investor (Mondays) plus a daily loan-monitoring job
+- 🔐 **Roles and permissions** with Filament Shield, multi-branch support and an activity log
 
-1. Beautiful, User-friendly interface for managing loans, borrowers, and lenders
-2. Add different types of loans, their percentage and interest cycle
-3. Add different types of wallets accounts such as expense wallet including expense categories for business expenses and loan wallet for loans payouts.
-4. Transfer funds from one wallet to the other e.g from loans wallet to the expense wallet
-5. Show all transactions history
-6. Loan application form with customizable fields to collect borrowers information and add borrower files.
-7. Automated loan approval process with customizable criteria and decision workflows.
-8. Loan repayment tracking and reminders for borrowers.
-9. Detailed loan reports and analytics for monitoring loan portfolios.
-10. Role-based access control to manage user permissions.
-11. Integration with external systems such as payment gateways and credit scoring services.
-12. Receive loan agreement forms via email once the loan is approved automatically and compile the loan settlement form once the loan is settled
-13. View and Export Active Loans, Denied Loans, Pending Loans and Defaulted Loans
-14. Update Payments for loans
-15. Assign roles, assign permissions, revoke roles Etc
-16. **Double-Entry Accounting** with Chart of Accounts, Journal Entries, General Ledger, Trial Balance, Statement of Financial Position, Statement of Comprehensive Income, and Cash Flow Statement
-17. **Bank / Cash Account management** linked to the Chart of Accounts — every wallet transaction auto-posts balanced journal entries
-18. **Granular permission control** via FilamentShield — every module including accounting reports is role/permission-gated
+## 🏗️ Architecture
 
-## Demo Credentials
-
-[Website Demo Link](https://lendfy-development.macroit.org)
-
-1. EMAIL: demo@demo.com
-2. PASSWORD: qwertyuiop
-
-## Installation (Local Development)
-
-### Clone the repository
-
-Please follow carefully the installation and use of this web framework of the Loan Management System for better utilization of it. Do not skip any stage.
-
-```bash
-git clone https://github.com/chandachewe10/loan-management-system.git
-cd loan-management-system
-composer install
-cp .env.example .env        # Windows: copy .env.example .env
+```mermaid
+flowchart LR
+    U[Staff / Admin] --> F[Filament panel]
+    F --> R[Resources + Policies]
+    R --> O[Observers]
+    O --> DE[DoubleEntryService]
+    DE --> L[(Journal entries / ledger)]
+    R --> DB[(Database)]
+    MP[M-Pesa Daraja] -->|callback| API["/api/mpesa/callback"] --> DB
+    S[Scheduler] --> J[loans:monitor, reports:send-scheduled]
 ```
 
-Set your database credentials and app settings in `.env`, then:
+## 🧰 Tech stack
+
+| Layer | Technology |
+| --- | --- |
+| Backend | PHP 8.2+, Laravel 10, Jetstream, Sanctum |
+| Admin UI | Filament 3, Livewire 3, Tailwind CSS, Vite |
+| Access control | Filament Shield (spatie permissions), policies |
+| Finance | bavix/laravel-wallet, custom double-entry service |
+| Documents / export | dompdf, PhpWord, filament-excel |
+| Integrations | M-Pesa Daraja, OpenAI-compatible API, SMTP mail |
+| Deployment | Docker (Apache + PHP 8.3), Railway config |
+
+## 🚀 Getting started
 
 ```bash
+git clone https://github.com/Brian-Dol/grofunder.git
+cd grofunder
+
+composer install
+npm install && npm run build
+
+cp .env.example .env
 php artisan key:generate
+# set DB_* and MAIL_* values in .env, then:
 php artisan migrate
 php artisan db:seed --class=ChartOfAccountsSeeder
-```
-
-Install Shield for roles and permissions:
-
-```bash
 php artisan shield:install
 php artisan shield:generate --all
-```
-
-Create a super-admin user (follow the prompts):
-
-```bash
 php artisan shield:super-admin
-```
-
-Link existing wallets to Chart of Accounts (run once after seeding):
-
-```bash
 php artisan db:seed --class=LinkExistingWalletsSeeder
-```
-
-Start your Application:
-
-```bash
 php artisan serve
 ```
 
-Set up email notifications using [Mailtrap](https://mailtrap.io). Copy the mail credentials for your Laravel app from Mailtrap and update the corresponding settings in your `.env` file.
+Run `php artisan schedule:work` for the scheduled jobs. M-Pesa, bulk import, document management and scheduled reports are documented in [`docs/`](docs).
 
----
+## 📁 Project structure
 
-## 🚀 Production Deployment
-
-Run these commands **in order** every time you deploy to the production server:
-
-```bash
-# 1. Pull latest code
-git pull origin main
-
-# 2. Install / update PHP dependencies (no dev packages)
-composer install --no-dev --optimize-autoloader
-
-# 3. Run any new database migrations
-php artisan migrate --force
-
-# 4. Seed the Chart of Accounts (safe to run multiple times — skips existing records)
-php artisan db:seed --class=ChartOfAccountsSeeder --force
-
-# 5. Link any unlinked wallets to Chart of Accounts
-php artisan db:seed --class=LinkExistingWalletsSeeder --force
-
-# 6. Regenerate Shield permissions for any new pages/resources added
-php artisan shield:generate --all
-
-# 7. Seed custom page permissions (accounting reports not auto-detected by Shield)
-php artisan db:seed --class=PagePermissionsSeeder --force
-
-# 8. Clear and re-cache everything for performance
-php artisan optimize:clear
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-php artisan event:cache
-
-# 9. Reset the permission cache
-php artisan permission:cache-reset
+```text
+app/Filament/Resources/   Filament resources (loans, borrowers, wallets, accounting, payroll...)
+app/Services/             DoubleEntryService, MpesaService, AICreditScoringService, report services
+app/Observers/            Model observers (ledger posting, activity logging)
+app/Console/Commands/     loans:monitor, reports:send-scheduled, admin helpers
+docs/                     Feature guides
 ```
 
-### First-time production setup only
+## 🗺️ Notes
 
-Run these **once** when setting up a brand-new production server:
+- Scope: a customised Laravel/Filament loan platform; some docs (bulk import) assume Zambian/Ugandan phone and currency formats.
+- Needs hardening before production: the repo contains `.env.railway` (deployment settings, committed) and temporary debug routes in `routes/web.php` (`/test-db`, `/logs`, `/run-seeders`) that should be removed or protected.
 
-```bash
-php artisan key:generate
-php artisan storage:link
-php artisan shield:install
-php artisan shield:super-admin
-```
+## 👤 Author
 
-### Queue Workers (if using queues)
-
-If you run queues (e.g. for notifications/emails), restart the worker after every deployment:
-
-```bash
-php artisan queue:restart
-```
-
-> **Note:** Always back up your database before running `php artisan migrate --force` in production.
-
----
-
-## Contributions
-
-Contributions to the Loan Management software are welcome! If you have suggestions, bug reports, or feature requests, please submit an issue or a pull request on the GitHub repository.
-
-## License
-
-The Loan Management software source code is publicly available but is licensed under the Proprietary License Agreement attached in this repo. Modifications, enhancements and improvements are allowed, but redistribution and commercial use require written consent from MACROIT INFORMATION TECHNOLOGY
+**Brian Dol**, Senior Full Stack Engineer · [Portfolio](https://portfolio.dol-brian23.workers.dev/) · [LinkedIn](https://linkedin.com/in/brian-dol-31a06115a/)
